@@ -1,0 +1,24 @@
+1) Changes in prevalence of ADHD 2017 to 2023
+
+XX 2) Type of outpatient visits for ADHD (inperson vs telehealth) between 2017 to 2023 (cant do this because of how data is collected)
+
+3) Medication for ADHD among people with ADHD
+  a) Any medication
+  b) At least 30 days of one specific medication
+  c) Coverage for atleast (300) days in a year for people who started taking medication year prior the survey
+  
+4) Among people with any medication use for ADHD
+  a) Average coverage per year
+  b) Average number of fills
+  c) Total cost
+  d) Total outofpocket cost
+  e) Average total cost per person
+  f) Average outofpocket cost per person
+  g) multifill_med (fills for difference stimulant or ADHD medication )
+  h) multifill_formulation (for same meds)
+
+5) Loss in productivity among people with ADHD vs people with out ADHD
+  a) Among people with ADHD (loss of productivity who have meds vs who do not have meds)
+  b) Same difference but a two part model with a function for zeros and a functions for days supply
+  
+6) Total cost (ER, INP, OUT, OB, RX)

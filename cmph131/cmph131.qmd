@@ -1,0 +1,237 @@
+---
+title: "Economic impact of COVID-19 on patients with ADHD"
+---
+
+## Abstract
+
+### Introduction
+
+### Methods
+
+### Results
+
+### Discussion
+
+## Results
+
+```{r}
+#| label: 00-setup
+
+# # Only need to run these once (uncomment if needed)
+# install.packages("foreign")  
+# install.packages("devtools")
+# install.packages("tidyverse")
+# install.packages("readr")
+# install.packages("readxl")
+# install.packages("haven")
+# install.packages("survey")
+# install_github("sshrestha274/meps_r_pkg/MEPS")
+
+# # Run these every time you restart R:
+library(foreign)
+library(devtools)
+library(tidyverse)
+library(readr)
+library(readxl)
+library(haven)
+library(survey)
+
+# # Not needed if using .rda file
+# library(MEPS)
+
+# survey option for lonely PSUs
+options(survey.lonely.psu = "adjust")
+
+# so columns won't be truncated when printing
+options(dplyr.width = Inf)
+
+# so big numbers aren't defaulted to scientific notation
+options(digits = 10)
+```
+
+```{r}
+#| label: 01-save-rda
+
+# save datasets as a .rda file for easy access without having to access API every time
+# this only works for 2017-2023 (tested)
+
+save_rda <- function(year = year) {
+  options(survey.lonely.psu = "adjust")
+
+  # year-specific variables
+  # get last 2 digits for year
+  short_year <- substr(year, 3, 4)
+  
+  perwt  <- paste0("PERWT",  short_year, "F")
+  ttlp   <- paste0("TTLP",   short_year, "X")
+  povcat <- paste0("POVCAT", short_year)
+  inscov <- paste0("INSCOV", short_year)
+  totslf <- paste0("TOTSLF", short_year)
+  obtotv <- paste0("OBTOTV", short_year)
+  optotv <- paste0("OPTOTV", short_year)
+  ipdis  <- paste0("IPDIS",  short_year)
+  ipngtd <- paste0("IPNGTD", short_year)
+  rxtot  <- paste0("RXTOT",  short_year)
+  ertot  <- paste0("ERTOT",  short_year)
+
+  # vars to keep
+  vars_to_keep <- c("DUPERSID","PANEL","VARSTR","VARPSU",                 # design
+                    "SEX", "AGE53X", "RACETHX", "MARRY53X", "REGION53",   # demo/ses
+                    "EDUYRDG", "EDUCYR",                                  # education
+                    "PCS42", "MCS42", "VPCS42", "VMCS42",                 # SF-12
+                    perwt, ttlp, povcat, inscov, totslf, obtotv, optotv,  # yr-specific
+                    ipdis, ipngtd, rxtot, ertot)
+
+  # read MEPS from lib
+  fyc <- read_MEPS(year = year, type = "FYC") %>%
+  
+    select(any_of(vars_to_keep)) %>%
+  
+    rename(
+      PERWT  = perwt,
+      TTLP   = ttlp,
+      POVCAT = povcat,
+      INSCOV = inscov,
+      TOTSLF = totslf,
+      OBTOTV = obtotv,
+      OPTOTV = optotv,
+      IPDIS  = ipdis,
+      IPNGTD = ipngtd,
+      RXTOT  = rxtot,
+      ERTOT  = ertot
+    )
+
+  # vars to keep
+  cond_vars <- c("DUPERSID", "ICD10CDX", "OPNUM", "OBNUM", 
+                 "IPNUM", "ERNUM", "HHNUM")
+
+  rx_vars   <- c("DUPERSID", "RXBEGYRX", "RXBEGMM",
+                 "RXDRGNAM", "RXNDC", "RXDAYSUP")
+
+  cond <- read_MEPS(year = year, type = "COND") %>%
+    select(any_of(cond_vars))
+
+  rx <- read_MEPS(year = year, type = "RX") %>%
+    select(any_of(rx_vars))
+
+  # save as .rda for that year
+    # ensure data directory exists
+    if (!dir.exists("data")) dir.create("data", recursive = TRUE)
+
+    out_file <- file.path("data", paste0("meps_", year, ".rda"))
+  
+    save(fyc, cond, rx, file = out_file)
+
+    invisible(out_file)
+}
+
+for (year in 2017:2023) {
+  save_rda(year)
+}
+```
+
+### The prevalence of ADHD increased since COVID-19
+
+```{r}
+#| label: 01-prevalence
+
+deprecate_adhd_prevalence <- function(year = year) {
+  options(survey.lonely.psu = "adjust")
+  perwt <- paste0("PERWT", substr(year, 3, 4), "F")
+  
+  fyc <- read_MEPS(year = year, type = "FYC") %>%
+    select(DUPERSID, PANEL, VARSTR, VARPSU, !!sym(perwt))
+
+  cond <- read_MEPS(year = year, type = "COND") %>%
+    select(DUPERSID, ICD10CDX)
+
+  icd_adhd <- "F90"
+  
+  adhd <- cond %>%
+    filter(ICD10CDX == icd_adhd) %>%
+    mutate(DX_ADHD = 1) %>%
+    distinct(DUPERSID, .keep_all = TRUE) 
+
+  joined_df <- full_join(fyc, adhd, by = "DUPERSID") %>%
+    mutate(DX_ADHD = if_else(is.na(DX_ADHD), 0, 1))
+
+  meps_design <- svydesign(
+    id     = ~VARPSU,
+    strata = ~VARSTR,
+    weights= as.formula(paste0("~", perwt)),
+    data   = joined_df,
+    nest   = TRUE
+  )
+
+  cat("N(ADHD), ", year)
+  print(svytotal(~DX_ADHD, design = meps_design))
+  
+  cat("\n%(ADHD), ", year)
+  print(svymean(~DX_ADHD, design = meps_design))
+}
+
+for (year in 2017:2023) {
+  deprecate_adhd_prevalence(year)
+}
+```
+
+### \[quantifier\] people are taking medications to treat ADHD than before
+
+```{r}
+
+```
+
+### \[econ finding related to ADHD medication use\]
+
+```{r}
+
+```
+
+### ADHD patients with access to medication have \[quantifier\] productivity compared to those without
+
+```{r}
+
+```
+
+### \[econ finding related to ADHD healthcare utilization\]
+
+```{r}
+
+```
+
+1)  Changes in prevalence of ADHD 2017 to 2023
+2)  Medication for ADHD among people with ADHD
+
+<!-- -->
+
+a)  Any medication
+b)  At least 30 days of one specific medication
+c)  Coverage for atleast (300) days in a year for people who started taking medication year prior the survey
+
+<!-- -->
+
+4)  Among people with any medication use for ADHD: Kat (a-d), Simran (e-h)
+
+<!-- -->
+
+a)  Average coverage per year
+b)  Average number of fills
+c)  Total cost
+d)  Total outofpocket cost
+e)  Average total cost per person
+f)  Average outofpocket cost per person
+g)  multifill_med (fills for difference stimulant or ADHD medication )
+h)  multifill_formulation (for same meds)
+
+<!-- -->
+
+5)  Loss in productivity among people with ADHD vs people with out ADHD: Brian
+
+<!-- -->
+
+a)  Among people with ADHD (loss of productivity who have meds vs who do not have meds)
+b)  Same difference but a two part model with a function for zeros and a functions for days supply
+
+<!-- -->
+
+6)  Total cost (ER, INP, OUT, OB, RX): Nitya
