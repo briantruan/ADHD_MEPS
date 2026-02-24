@@ -135,44 +135,44 @@ for (year in 2017:2023) {
 ```{r}
 #| label: 01-prevalence
 
-deprecate_adhd_prevalence <- function(year = year) {
-  options(survey.lonely.psu = "adjust")
-  perwt <- paste0("PERWT", substr(year, 3, 4), "F")
+# deprecate_adhd_prevalence <- function(year = year) {
+#   options(survey.lonely.psu = "adjust")
+#   perwt <- paste0("PERWT", substr(year, 3, 4), "F")
   
-  fyc <- read_MEPS(year = year, type = "FYC") %>%
-    select(DUPERSID, PANEL, VARSTR, VARPSU, !!sym(perwt))
+#   fyc <- read_MEPS(year = year, type = "FYC") %>%
+#     select(DUPERSID, PANEL, VARSTR, VARPSU, !!sym(perwt))
 
-  cond <- read_MEPS(year = year, type = "COND") %>%
-    select(DUPERSID, ICD10CDX)
+#   cond <- read_MEPS(year = year, type = "COND") %>%
+#     select(DUPERSID, ICD10CDX)
 
-  icd_adhd <- "F90"
+#   icd_adhd <- "F90"
   
-  adhd <- cond %>%
-    filter(ICD10CDX == icd_adhd) %>%
-    mutate(DX_ADHD = 1) %>%
-    distinct(DUPERSID, .keep_all = TRUE) 
+#   adhd <- cond %>%
+#     filter(ICD10CDX == icd_adhd) %>%
+#     mutate(DX_ADHD = 1) %>%
+#     distinct(DUPERSID, .keep_all = TRUE) 
 
-  joined_df <- full_join(fyc, adhd, by = "DUPERSID") %>%
-    mutate(DX_ADHD = if_else(is.na(DX_ADHD), 0, 1))
+#   joined_df <- full_join(fyc, adhd, by = "DUPERSID") %>%
+#     mutate(DX_ADHD = if_else(is.na(DX_ADHD), 0, 1))
 
-  meps_design <- svydesign(
-    id     = ~VARPSU,
-    strata = ~VARSTR,
-    weights= as.formula(paste0("~", perwt)),
-    data   = joined_df,
-    nest   = TRUE
-  )
+#   meps_design <- svydesign(
+#     id     = ~VARPSU,
+#     strata = ~VARSTR,
+#     weights= as.formula(paste0("~", perwt)),
+#     data   = joined_df,
+#     nest   = TRUE
+#   )
 
-  cat("N(ADHD), ", year)
-  print(svytotal(~DX_ADHD, design = meps_design))
+#   cat("N(ADHD), ", year)
+#   print(svytotal(~DX_ADHD, design = meps_design))
   
-  cat("\n%(ADHD), ", year)
-  print(svymean(~DX_ADHD, design = meps_design))
-}
+#   cat("\n%(ADHD), ", year)
+#   print(svymean(~DX_ADHD, design = meps_design))
+# }
 
-for (year in 2017:2023) {
-  deprecate_adhd_prevalence(year)
-}
+# for (year in 2017:2023) {
+#   deprecate_adhd_prevalence(year)
+# }
 ```
 
 ### \[quantifier\] people are taking medications to treat ADHD than before
@@ -210,7 +210,7 @@ c)  Coverage for atleast (300) days in a year for people who started taking medi
 
 <!-- -->
 
-4)  Among people with any medication use for ADHD: Kat (a-d), Simran (e-h)
+4)  Among people with any medication use for ADHD
 
 <!-- -->
 
@@ -225,7 +225,7 @@ h)  multifill_formulation (for same meds)
 
 <!-- -->
 
-5)  Loss in productivity among people with ADHD vs people with out ADHD: Brian
+5)  Loss in productivity among people with ADHD vs people with out ADHD
 
 <!-- -->
 
@@ -234,4 +234,4 @@ b)  Same difference but a two part model with a function for zeros and a functio
 
 <!-- -->
 
-6)  Total cost (ER, INP, OUT, OB, RX): Nitya
+6)  Total cost (ER, INP, OUT, OB, RX)
