@@ -116,9 +116,32 @@ fyc <- fyc %>%
     )
   )
 
-table(fyc$insurance)
-unique(fyc$insurance)
+# Other dummies to account for insurance
 # Medicaid only, Medicaid w private, other public
 # Medicare (any), non-Medicare
 # Private
 # Uninsured
+
+fyc$medicaid <- NA
+fyc <- fyc %>% 
+  mutate(
+    medicaid = case_when(
+      insurance == "Medicaid only" ~ "Medicaid only",
+      insurance == "Medicaid, with private" ~ "Medicaid, with private, non-Medicare",
+      TRUE ~ "No Medicaid"
+    )
+  )
+
+fyc$medicare <- NA
+fyc <- fyc %>% 
+  mutate(
+    medicare = case_when(
+      insurance %in% c("Medicare, with private", "Medicare, dual-eligible", 
+                       "Medicare, with other public", "Medicare only") ~ "Medicare, any",
+      TRUE ~ "No Medicare"
+    )
+  )
+
+fyc$private_ins <- ifelse(fyc$insurance == "Private only", "Private only", "Other/uninsured")
+
+fyc$has_insurance <- ifelse(fyc$INSCOV == "UNINSURED", "No insurance", "Has insurance")
