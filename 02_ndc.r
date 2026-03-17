@@ -44,3 +44,5 @@ rx_ndc <- rx %>%
     RXDAYSUP,
     formulation
   )
+
+# include atomoxetine and viloxazine (SNRIs that are only FDA approved for ADHD)
