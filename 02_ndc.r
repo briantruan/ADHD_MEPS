@@ -12,10 +12,19 @@ ndc_all <- files %>%
     .id = "source_file"
   ) %>% 
   distinct() %>% 
-  filter(str_detect(`Pharm Class`, "Central Nervous System Stimulant"))
+  filter(
+    str_detect(`Pharm Class`, "Central Nervous System Stimulant") |
+      str_detect(
+        toupper(`Proprietary Name`),
+        "ATOMOXETINE|STRATTERA|VILOXAZINE|QELBREE"
+      )
+  )
 
-ndc_all$formulation <- NA
-ndc_all$formulation <- ifelse(str_detect(ndc_all$`Dosage Form`, "EXTENDED"), "Extended", "Normal")
+ndc_all$formulation <- ifelse(
+  str_detect(toupper(ndc_all$`Dosage Form`), "EXTENDED"),
+  "Extended",
+  "Normal"
+)
 
 ndc_stim <- ndc_all %>%
   select(
@@ -23,12 +32,13 @@ ndc_stim <- ndc_all %>%
     `NDC Package Code`,
     `Dosage Form`,
     formulation
-  )
+  ) %>%
+  distinct()
 
-# NDC adds - for legibility; remove to be compatible with meps
+# NDC adds - for legibility; remove to be compatible with MEPS
 ndc_stim$ndc_compatible <- str_remove_all(ndc_stim$`NDC Package Code`, "-")
 
-# need to add a leading 0 to match MEPS RX dataset
+# add leading 0 to match MEPS RX dataset
 ndc_stim <- ndc_stim %>% 
   mutate(ndc_compatible = str_pad(ndc_compatible, width = 11, side = "left", pad = "0"))
 
@@ -45,4 +55,5 @@ rx_ndc <- rx %>%
     formulation
   )
 
-# include atomoxetine and viloxazine (SNRIs that are only FDA approved for ADHD)
+# include atomoxetine and viloxazine (SNRIs that are only FDA approved for ADHD).
+# other nonstimulants (guanfacine, clonidine) are approved for other conditions and are thus excluded
