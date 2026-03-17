@@ -44,8 +44,11 @@ load_meps_year <- function(year) {
                     "HAVEUS42", inscov, insurc, "MCAID53X",
                     totslf, obtotv, optotv, ipdis, ipngtd, rxtot, ertot)
 
-  cond_vars <- c("DUPERSID", "ICD10CDX", "OPNUM", "OBNUM",
-                 "IPNUM", "ERNUM", "HHNUM")
+  cond_vars <- c("DUPERSID", "ICD10CDX", "OPNUM", "OPCOND",
+                 "OBNUM", "OBCOND",
+                 "IPNUM", "IPCOND",
+                 "ERNUM", "ERCOND",
+                 "HHNUM", "HHCOND")
 
   rx_vars   <- c("DUPERSID", "RXBEGYRX", "RXBEGMM",
                  "RXDRGNAM", "RXNDC", "RXDAYSUP")
@@ -95,4 +98,4 @@ save_all_years <- function(years = 2017:2023, out_file = file.path("data", "meps
 }
 
 # Uncomment to run:
-# save_all_years(2017:2023)
+save_all_years(2017:2023)

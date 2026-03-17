@@ -42,17 +42,21 @@ ndc_stim$ndc_compatible <- str_remove_all(ndc_stim$`NDC Package Code`, "-")
 ndc_stim <- ndc_stim %>% 
   mutate(ndc_compatible = str_pad(ndc_compatible, width = 11, side = "left", pad = "0"))
 
-rx_ndc <- rx %>% 
-  left_join(ndc_stim, join_by(RXNDC == ndc_compatible), relationship = "many-to-many") %>% 
-  filter(!is.na(`NDC Package Code`)) %>% 
-  select(
-    DUPERSID,
-    RXBEGYRX,
-    RXBEGMM,
-    RXDRGNAM,
-    RXNDC,
-    RXDAYSUP,
-    formulation
+rx_ndc <- list(rx_2019 = rx_2019, rx_2021 = rx_2021) |>
+  imap_dfr(
+    ~ .x %>%
+      left_join(ndc_stim, join_by(RXNDC == ndc_compatible), relationship = "many-to-many") %>%
+      filter(!is.na(`NDC Package Code`)) %>%
+      select(
+        DUPERSID,
+        RXBEGYRX,
+        RXBEGMM,
+        RXDRGNAM,
+        RXNDC,
+        RXDAYSUP,
+        formulation
+      ) %>%
+      mutate(year = as.integer(str_remove(.y, "^rx_")))
   )
 
 # include atomoxetine and viloxazine (SNRIs that are only FDA approved for ADHD).
