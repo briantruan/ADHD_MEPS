@@ -1,7 +1,7 @@
 
 ---
 title: "CMPH 133: Group Project Analysis Template"
-author: Write Your Names Here
+author: "Katrina Hannett, Nitya Koduri, Brian Ruan, Simran Rajpal, Shikhar Shrestha, PhD"
 date: "`r Sys.Date()`"
 output: 
   html_document:
@@ -15,15 +15,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
-
 <!-- This is how you add comments in your Markdown file. Anything appearing here will not appear when you Knit this file. If you need to leave comments for yourself as you work on this document, you can use this technique.-->
-
-
-**Change the title to something more meaningful**
-
-
-
 
 ### Ready the Workspace
 
@@ -113,7 +105,7 @@ Write your abstract here using the following four sections. The abstract should 
 
 <!-- The following code gives the default way of including an image into your RMD file, along with a caption. But it does not allow a lot of customization. -->
 
-![**Figure 1:** Flowchart showing the inclusion/exclusion criteria, and the numbers removed at each step.](data_cleaning_flowchart.png)
+![**Figure 1:** Flowchart showing the inclusion/exclusion criteria, and the numbers removed at each step.](analysis template/data_cleaning_flowchart.png)
 
 - Describe the broader concepts for exposure and outcome variables, and how they are actually measured/represented in your study. Cite evidence or theoretical backing for why this particular measure is a valid construct for the concept you are trying to capture, and exactly what dimension of your concept it actually captures. For example, your research question might be "Too much screen time is bad for cardiovascular health"; "screen time" and "cardiovascular health" are broad concepts. In your study, how exactly do you define/measure these concepts? Perhaps you define screen time as *number of minutes on the phone per day while not performing a work related task* and cardiovascular health as *average systolic blood pressure based on measuring it on five consecutive days*. Discuss what aspect of "screen time" and "cardiovascular health" these specific measures of these concepts actually capture; what are the pros and cons/strengths and weaknesses of these particular measures.
 
@@ -124,7 +116,7 @@ Write your abstract here using the following four sections. The abstract should 
 NOTE: for this code to run, you must install the package "here" (install.packages("here")) -->
 
 ```{r DAG, fig.align = 'center', out.width = "40%", fig.cap = "**Figure 2:** My DAG"}
-knitr::include_graphics(here::here("DAG.png"))
+knitr::include_graphics(here::here("analysis template/DAG.png"))
 ```
 
 
