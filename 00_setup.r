@@ -9,6 +9,7 @@
 # install.packages("stringr")
 # install.packages("tidyr")
 # install.packages("gtsummary")
+# install.packages("gt")
 # install.packages("survey")
 
 # # Run these every time you restart R:
@@ -22,6 +23,7 @@ library(dplyr)
 library(stringr)
 library(tidyr)
 library(gtsummary)
+library(gt)
 library(survey)
 
 install_github("sshrestha274/meps_r_pkg/MEPS")

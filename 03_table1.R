@@ -110,3 +110,6 @@ table1 <- add_p(table1)
 table1 <- bold_labels(table1)
 
 table1
+
+table1_gt <- as_gt(table1)
+gt::gtsave(table1_gt, filename = file.path("exports", "table1.docx"))
