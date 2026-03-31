@@ -5,6 +5,9 @@
 # install.packages("readr")
 # install.packages("readxl")
 # install.packages("haven")
+# install.packages("dplyr")
+# install.packages("gtsummary")
+# install.packages("stringr")
 # install.packages("survey")
 
 # # Run these every time you restart R:
@@ -14,6 +17,9 @@ library(tidyverse)
 library(readr)
 library(readxl)
 library(haven)
+library(dplyr)
+library(gtsummary)
+library(stringr)
 library(survey)
 
 # only run once if needed
@@ -129,4 +135,4 @@ save_all_years <- function(years = 2017:2023, out_file = file.path("data", "meps
   invisible(out_file)
 }
 
-#save_all_years(2017:2023)
+# save_all_years(2017:2023)
