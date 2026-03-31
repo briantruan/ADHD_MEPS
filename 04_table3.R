@@ -115,14 +115,8 @@ table3 <- tbl_svysummary(
   modify_footnote(
     p.value ~ "Pearson's X^2: Rao & Scott adjustment"
   ) %>%
-  modify_caption(
-    "**Table 3. Weighted proportion of ADHD cohort using specific study medications, by year**"
-  ) %>%
   modify_table_styling(
     columns = label,
-
-    # we are going to double check if the alpha 2 agonists are prescribed for ADHD
-
     footnote = "Viloxazine use was 0% in both 2019 and 2021 and is not shown."
   )
 

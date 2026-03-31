@@ -64,6 +64,11 @@ fyc_2021_sub <- fyc_2021_sub %>%
 
 fyc_combined <- bind_rows(fyc_2019_sub, fyc_2021_sub)
 
+# because children are kept in the sample, income_2021 median is skewing towards 0.
+# let's take median among adults (18+)
+fyc_combined <- fyc_combined %>%
+  mutate(adult_income_2021 = if_else(AGE53X >= 18, income_2021, NA_real_))
+
 meps_design <- svydesign(
   id = ~VARPSU,
   strata = ~VARSTR,
@@ -83,7 +88,7 @@ table1 <- tbl_svysummary(
     education,
     has_insurance,
     insurance,
-    income_2021,
+    adult_income_2021,
     totslf_2021
   ),
   label = list(
@@ -94,12 +99,12 @@ table1 <- tbl_svysummary(
     education ~ "Education",
     has_insurance ~ "Has insurance", 
     insurance ~ "Type of Insurance",
-    income_2021 ~ "Household income (2021 USD)",
+    adult_income_2021 ~ "Household (18+ years) income (2021 USD)",
     totslf_2021 ~ "Total spending (2021 USD)"
   ),
   statistic = list(
     AGE53X ~ "{mean} ({sd})",
-    income_2021 ~ "{median} ({p25}, {p75})",
+    adult_income_2021 ~ "{median} ({p25}, {p75})",
     totslf_2021 ~ "{median} ({p25}, {p75})",
     all_categorical() ~ "{n} ({p}%)"
   ),
