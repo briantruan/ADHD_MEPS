@@ -25,6 +25,7 @@ analytic_ids <- intersect(ids_both, adhd_ids)
 
 fyc_2019_sub <- fyc_2019 %>%
   filter(DUPERSID %in% analytic_ids) %>%
+  # filter(AGE53X >= 18) %>%
   mutate(
     year = factor(2019),
     sex = factor(SEX),
@@ -40,6 +41,7 @@ fyc_2019_sub <- fyc_2019 %>%
 
 fyc_2021_sub <- fyc_2021 %>%
   filter(DUPERSID %in% analytic_ids) %>%
+  # filter(AGE53X >= 18) %>%
   mutate(
     year = factor(2021),
     sex = factor(SEX),

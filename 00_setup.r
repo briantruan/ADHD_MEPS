@@ -48,7 +48,8 @@ load_meps_year <- function(year) {
                  "OBNUM", "OBCOND",
                  "IPNUM", "IPCOND",
                  "ERNUM", "ERCOND",
-                 "HHNUM", "HHCOND")
+                 "HHNUM", "HHCOND",
+                 "AGEDIAG", "RXNUM")
 
   rx_vars   <- c("DUPERSID", "RXBEGYRX", "RXBEGMM",
                  "RXDRGNAM", "RXNDC", "RXDAYSUP")

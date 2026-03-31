@@ -50,6 +50,11 @@ fyc_2021 <- fyc_2021 %>% dplyr::rename(INSURC = INSURC21)
 recode_fyc <- function(df) {
   df %>% 
     dplyr::mutate(
+      sex = case_when(
+        SEX == "MALE" ~ "Male",
+        SEX == "FEMALE" ~ "Female",
+        TRUE ~ NA_character_
+      ),
       ethnicity = dplyr::case_when(
         RACETHX == "HISPANIC" ~ "Hispanic",
         TRUE ~ "Non-Hispanic"
@@ -69,8 +74,8 @@ recode_fyc <- function(df) {
       REGION53 = dplyr::na_if(REGION53, "-1 INAPPLICABLE"),
       education = dplyr::case_when(
         EDUCYR %in% c("-1 INAPPLICABLE", "-7 REFUSED", "-8 DK", "-15 CANNOT BE COMPUTED") ~ NA_character_,
-        EDUCYR %in% c("NO SCHOOL/KINDERGARTEN ONLY", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11") ~ "Less than high school",
-        EDUCYR %in% c("GRADE 12", "1 YEAR COLLEGE", "2 YEARS COLLEGE", "3 YEARS COLLEGE", "4 YEARS COLLEGE", "5+ YEARS COLLEGE") ~ "High school graduation or greater",
+        EDUCYR %in% c("NO SCHOOL/KINDERGARTEN ONLY", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "GRADE 12") ~ "High school graduation or less",
+        EDUCYR %in% c("1 YEAR COLLEGE", "2 YEARS COLLEGE", "3 YEARS COLLEGE", "4 YEARS COLLEGE", "5+ YEARS COLLEGE") ~ "College education or greater",
         TRUE ~ NA_character_
       ),
       insurance = dplyr::case_when(
