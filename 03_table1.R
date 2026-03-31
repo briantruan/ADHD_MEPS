@@ -1,8 +1,3 @@
-library(dplyr)
-library(survey)
-library(gtsummary)
-library(stringr)
-
 options(survey.lonely.psu = "adjust")
 
 ids_both <- intersect(fyc_2019$DUPERSID, fyc_2021$DUPERSID)
