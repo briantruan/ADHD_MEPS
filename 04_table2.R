@@ -110,7 +110,6 @@ table2 <- tbl_svysummary(
     Methylphenidate ~ "Methylphenidate",
     Amphetamine ~ "Amphetamine mixed salts",
     Atomoxetine ~ "Atomoxetine",
-    Viloxazine ~ "Viloxazine",
     Guanfacine ~ "Guanfacine",
     Clonidine ~ "Clonidine",
   ),
