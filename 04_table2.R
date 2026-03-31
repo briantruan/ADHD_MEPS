@@ -1,7 +1,4 @@
-
-
 options(survey.lonely.psu = "adjust")
-
 
 standardize_adhd_med <- function(drug_name) {
   case_when(
@@ -36,7 +33,6 @@ rx_2021_adhd <- rx_2021 %>%
 rx_person_med <- bind_rows(rx_2019_adhd, rx_2021_adhd) %>%
   distinct(DUPERSID, year, medication)
 
-
 med_wide <- rx_person_med %>%
   mutate(use = 1) %>%
   pivot_wider(
@@ -63,7 +59,6 @@ for (med in all_meds) {
   }
 }
 
-
 table2_data <- fyc_combined %>%
   left_join(med_wide, by = c("DUPERSID", "year")) %>%
   mutate(
@@ -76,7 +71,6 @@ table2_data <- fyc_combined %>%
       ~ factor(.x, levels = c(0, 1), labels = c("No", "Yes"))
     )
   )
-
 
 meps_design2 <- svydesign(
   id = ~VARPSU,
@@ -125,6 +119,9 @@ table2 <- tbl_svysummary(
   ) %>%
   modify_table_styling(
     columns = label,
+
+    # we are going to double check if the alpha 2 agonists are prescribed for ADHD
+
     footnote = "Viloxazine use was 0% in both 2019 and 2021 and is not shown. Guanfacine and clonidine were excluded because they may have been prescribed for indications other than ADHD."
   )
 
