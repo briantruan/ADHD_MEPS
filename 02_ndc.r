@@ -54,7 +54,18 @@ rx_ndc <- list(rx_2019 = rx_2019, rx_2021 = rx_2021) |>
         RXDRGNAM,
         RXNDC,
         RXDAYSUP,
-        formulation
+        formulation,
+        RXSF,
+        RXMR,
+        RXMD,
+        RXPV,
+        RXVA,
+        RXTR,
+        RXOF,
+        RXSL,
+        RXWC,
+        RXOT,
+        RXXP
       ) %>%
       mutate(year = as.integer(str_remove(.y, "^rx_")))
   )

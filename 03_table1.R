@@ -1,3 +1,8 @@
+library(dplyr)
+library(survey)
+library(gtsummary)
+library(stringr)
+
 options(survey.lonely.psu = "adjust")
 
 ids_both <- intersect(fyc_2019$DUPERSID, fyc_2021$DUPERSID)
@@ -111,5 +116,104 @@ table1 <- bold_labels(table1)
 
 table1
 
-table1_gt <- as_gt(table1)
-gt::gtsave(table1_gt, filename = file.path("exports", "table1.docx"))
+
+adhd_rx_summary <- rx_ndc %>%
+  mutate(
+    across(c(RXSF, RXMR, RXMD, RXPV, RXVA, RXTR, RXOF, RXSL, RXWC, RXOT, RXXP),
+           ~ as.numeric(as.character(.))),
+    RXDAYSUP = as.numeric(as.character(RXDAYSUP))
+  ) %>%
+  group_by(DUPERSID, year) %>%
+  summarise(
+    adhd_any_rx = "Yes",
+    adhd_rx_n = n(),
+    adhd_daysup_total = sum(RXDAYSUP, na.rm = TRUE),
+    adhd_total_spend = sum(RXXP, na.rm = TRUE),
+    adhd_oop = sum(RXSF, na.rm = TRUE),
+    adhd_private = sum(RXPV, na.rm = TRUE),
+    adhd_medicaid = sum(RXMD, na.rm = TRUE),
+    adhd_medicare = sum(RXMR, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    oop_share = if_else(adhd_total_spend > 0, adhd_oop / adhd_total_spend, NA_real_)
+  )
+
+fyc_2019_t2 <- fyc_2019_sub %>%
+  left_join(
+    adhd_rx_summary %>% filter(year == 2019) %>% select(-year),
+    by = "DUPERSID"
+  ) %>%
+  mutate(
+    adhd_any_rx = as.character(adhd_any_rx),
+    adhd_any_rx = replace_na(adhd_any_rx, "No"),
+    adhd_any_rx = factor(adhd_any_rx, levels = c("No", "Yes")),
+    across(
+      c(adhd_rx_n, adhd_daysup_total, adhd_total_spend, adhd_oop,
+        adhd_private, adhd_medicaid, adhd_medicare, oop_share),
+      ~ replace_na(., 0)
+    )
+  )
+
+fyc_2021_t2 <- fyc_2021_sub %>%
+  left_join(
+    adhd_rx_summary %>% filter(year == 2021) %>% select(-year),
+    by = "DUPERSID"
+  ) %>%
+  mutate(
+    adhd_any_rx = as.character(adhd_any_rx),
+    adhd_any_rx = replace_na(adhd_any_rx, "No"),
+    adhd_any_rx = factor(adhd_any_rx, levels = c("No", "Yes")),
+    across(
+      c(adhd_rx_n, adhd_daysup_total, adhd_total_spend, adhd_oop,
+        adhd_private, adhd_medicaid, adhd_medicare, oop_share),
+      ~ replace_na(., 0)
+    )
+  )
+
+fyc_combined_t2 <- bind_rows(fyc_2019_t2, fyc_2021_t2)
+
+meps_design_t2 <- svydesign(
+  id = ~VARPSU,
+  strata = ~VARSTR,
+  weights = ~PERWT,
+  data = fyc_combined_t2,
+  nest = TRUE
+)
+
+table2 <- tbl_svysummary(
+  meps_design_t2,
+  by = year,
+  include = c(
+    adhd_any_rx,
+    adhd_rx_n,
+    adhd_daysup_total,
+    adhd_total_spend,
+    adhd_oop,
+    adhd_private,
+    adhd_medicaid,
+    adhd_medicare,
+    oop_share
+  ),
+  label = list(
+    adhd_any_rx ~ "Any ADHD medication",
+    adhd_rx_n ~ "Number of ADHD prescriptions",
+    adhd_daysup_total ~ "Total ADHD medication days supplied",
+    adhd_total_spend ~ "Total ADHD medication spending (USD)",
+    adhd_oop ~ "Out-of-pocket ADHD spending (USD)",
+    adhd_private ~ "Private insurance ADHD spending (USD)",
+    adhd_medicaid ~ "Medicaid ADHD spending (USD)",
+    adhd_medicare ~ "Medicare ADHD spending (USD)",
+    oop_share ~ "Out-of-pocket share of ADHD medication spending"
+  ),
+  statistic = list(
+    adhd_any_rx ~ "{n} ({p}%)",
+    all_continuous() ~ "{mean} ({p25}, {p75})"
+  ),
+  missing = "ifany"
+)
+
+table2 <- add_p(table2)
+table2 <- bold_labels(table2)
+
+table2
