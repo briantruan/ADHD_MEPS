@@ -162,7 +162,9 @@ display_meds <- c(
   "Dexmethylphenidate",
   "Methylphenidate",
   "Amphetamine",
-  "Atomoxetine"
+  "Atomoxetine",
+  "Guanfacine",
+  "Clonidine"
 )
 
 table2 <- tbl_svysummary(
