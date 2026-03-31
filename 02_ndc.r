@@ -16,7 +16,7 @@ ndc_all <- files %>%
     str_detect(`Pharm Class`, "Central Nervous System Stimulant") |
       str_detect(
         toupper(`Proprietary Name`),
-        "ATOMOXETINE|STRATTERA|VILOXAZINE|QELBREE"
+        "ATOMOXETINE|STRATTERA|VILOXAZINE|QELBREE|GUANFACINE|INTUNIV|TENEX||CLONIDINE|KAPVAY|CATAPRES"
       )
   )
 
