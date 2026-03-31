@@ -126,3 +126,6 @@ table2 <- tbl_svysummary(
   )
 
 table2
+
+table2_gt <- as_gt(table2)
+gt::gtsave(table2_gt, filename = file.path("exports", "table2.docx"))
