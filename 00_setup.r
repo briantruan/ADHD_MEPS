@@ -7,6 +7,7 @@
 # install.packages("haven")
 # install.packages("dplyr")
 # install.packages("gtsummary")
+# isntall.packages("gt")
 # install.packages("stringr")
 # install.packages("survey")
 
@@ -19,6 +20,7 @@ library(readxl)
 library(haven)
 library(dplyr)
 library(gtsummary)
+library(gt)
 library(stringr)
 library(survey)
 
