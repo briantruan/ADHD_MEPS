@@ -49,36 +49,37 @@ fyc_2021 <- fyc_2021 %>% dplyr::rename(INSURC = INSURC21)
 
 recode_fyc <- function(df) {
   df %>% 
-    dplyr::mutate(
+    mutate(
       sex = case_when(
         SEX == "MALE" ~ "Male",
         SEX == "FEMALE" ~ "Female",
         TRUE ~ NA_character_
       ),
-      ethnicity = dplyr::case_when(
+      ethnicity = case_when(
         RACETHX == "HISPANIC" ~ "Hispanic",
         TRUE ~ "Non-Hispanic"
       ),
-      race = dplyr::case_when(
+      race = case_when(
         RACETHX == "NON-HISPANIC ASIAN ONLY" ~ "Asian",
         RACETHX == "NON-HISPANIC BLACK ONLY" ~ "Black",
         RACETHX == "NON-HISPANIC OTHER RACE OR MULTIPLE RACE" ~ "Other",
         RACETHX == "NON-HISPANIC WHITE ONLY" ~ "White",
         TRUE ~ NA_character_
       ),
-      marital = dplyr::case_when(
+      race = factor(race, levels = c("White", "Black", "Asian", "Other")),
+      marital = case_when(
         MARRY53X %in% c("-1 INAPPLICABLE", "-7 REFUSED", "-8 DK") ~ NA_character_,
         MARRY53X %in% c("MARRIED", "MARRIED IN ROUND") ~ "Married",
         TRUE ~ "Not married"
       ),
-      REGION53 = dplyr::na_if(REGION53, "-1 INAPPLICABLE"),
-      education = dplyr::case_when(
+      REGION53 = na_if(REGION53, "-1 INAPPLICABLE"),
+      education = case_when(
         EDUCYR %in% c("-1 INAPPLICABLE", "-7 REFUSED", "-8 DK", "-15 CANNOT BE COMPUTED") ~ NA_character_,
         EDUCYR %in% c("NO SCHOOL/KINDERGARTEN ONLY", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "GRADE 12") ~ "High school graduation or less",
         EDUCYR %in% c("1 YEAR COLLEGE", "2 YEARS COLLEGE", "3 YEARS COLLEGE", "4 YEARS COLLEGE", "5+ YEARS COLLEGE") ~ "College education or greater",
         TRUE ~ NA_character_
       ),
-      insurance = dplyr::case_when(
+      insurance = case_when(
         INSURC %in% c("<65 UNINSURED", "65+ UNINSURED") ~ "Uninsured",
         INSURC == "<65 ANY PRIVATE" & MCAID53X != "YES" ~ "Private only",
         INSURC == "<65 ANY PRIVATE" & MCAID53X == "YES" ~ "Medicaid, with private",
@@ -98,20 +99,31 @@ recode_fyc <- function(df) {
         INSCOV == "PUBLIC ONLY" & MCAID53X != "YES" ~ "Other public",
         TRUE ~ NA_character_
       ),
-      medicaid = dplyr::case_when(
+      insurance = factor(insurance, levels = c(
+        "Private only",
+        "Medicaid only",
+        "Medicaid, with private",
+        "Medicare only",
+        "Medicare, with private",
+        "Medicare, with other public",
+        "Medicare, dual-eligible",
+        "Other public",
+        "Uninsured"
+      )),
+      medicaid = case_when(
         insurance == "Medicaid only" ~ "Medicaid only",
         insurance == "Medicaid, with private" ~ "Medicaid, with private, non-Medicare",
         TRUE ~ "No Medicaid"
       ),
-      medicare = dplyr::case_when(
+      medicare = case_when(
         insurance %in% c("Medicare, with private", "Medicare, dual-eligible", "Medicare, with other public", "Medicare only") ~ "Medicare, any",
         TRUE ~ "No Medicare"
       ),
-      private_ins = dplyr::case_when(
+      private_ins = case_when(
         insurance == "Private only" ~ "Private only",
         TRUE ~ "Other/uninsured"
       ),
-      has_insurance = dplyr::case_when(
+      has_insurance = case_when(
         INSCOV == "UNINSURED" ~ "No insurance",
         INSCOV %in% c("ANY PRIVATE", "PUBLIC ONLY") ~ "Has insurance",
         TRUE ~ NA_character_

@@ -1,9 +1,3 @@
-
-library(dplyr)
-library(tidyr)
-library(survey)
-library(gtsummary)
-library(gt)
 options(survey.lonely.psu = "adjust")
 
 ids_both <- intersect(fyc_2019$DUPERSID, fyc_2021$DUPERSID)
@@ -29,14 +23,8 @@ fyc_2019_sub <- fyc_2019 %>%
   # filter(AGE53X >= 18) %>%
   mutate(
     year = factor(2019),
-    sex = factor(SEX),
     income_2021 = income_2021,
-    totslf_2021 = totslf_2021,
-    race = factor(race),
-    ethnicity = factor(ethnicity),
-    education = factor(education),
-    insurance = factor(insurance),
-    has_insurance = factor(has_insurance)
+    totslf_2021 = totslf_2021
   ) %>%
   filter(if_all(all_of(c("DUPERSID", "VARPSU", "VARSTR", "PERWT")), ~ !is.na(.)))
 
@@ -45,14 +33,8 @@ fyc_2021_sub <- fyc_2021 %>%
   # filter(AGE53X >= 18) %>%
   mutate(
     year = factor(2021),
-    sex = factor(SEX),
     income_2021 = TTLP,
-    totslf_2021 = TOTSLF,
-    race = factor(race),
-    ethnicity = factor(ethnicity),
-    education = factor(education),
-    insurance = factor(insurance),
-    has_insurance = factor(has_insurance)
+    totslf_2021 = TOTSLF
   ) %>%
   filter(if_all(all_of(c("DUPERSID", "VARPSU", "VARSTR", "PERWT")), ~ !is.na(.)))
 
@@ -97,6 +79,9 @@ table1 <- tbl_svysummary(
     adult_income_2021,
     totslf_2021
   ),
+  sort = list(
+    insurance ~ "alphanumeric"
+  ),
   label = list(
     AGE53X ~ "Age, years",
     sex ~ "Sex",
@@ -104,7 +89,7 @@ table1 <- tbl_svysummary(
     ethnicity ~ "Ethnicity",
     education ~ "Education",
     has_insurance ~ "Has insurance", 
-    insurance ~ "Type of Insurance",
+    insurance ~ "Type of insurance",
     adult_income_2021 ~ "Household (18+ years) income (2021 USD)",
     totslf_2021 ~ "Total spending (2021 USD)"
   ),
@@ -114,11 +99,11 @@ table1 <- tbl_svysummary(
     totslf_2021 ~ "{median} ({p25}, {p75})",
     all_categorical() ~ "{n} ({p}%)"
   ),
-  missing = "ifany"
-)
+  missing = "no"
+) %>% 
+  add_p() %>%
+  bold_labels()
 
-table1 <- add_p(table1)
-table1 <- bold_labels(table1)
 table1
 
 table1_gt <- as_gt(table1)
@@ -145,15 +130,15 @@ adhd_rx_summary <- rx_ndc %>%
     adhd_any_rx = "Yes",
     adhd_rx_n = n(),
     adhd_daysup_total = sum(RXDAYSUP, na.rm = TRUE),
-    adhd_total_spend = sum(RXXP, na.rm = TRUE),
-    adhd_oop = sum(RXSF, na.rm = TRUE),
-    adhd_private = sum(RXPV, na.rm = TRUE),
-    adhd_medicaid = sum(RXMD, na.rm = TRUE),
-    adhd_medicare = sum(RXMR, na.rm = TRUE),
+    adhd_total_spend = sum(RXXP, na.rm = TRUE, digits = 2),
+    adhd_oop = sum(RXSF, na.rm = TRUE, digits = 2),
+    adhd_private = sum(RXPV, na.rm = TRUE, digits = 2),
+    adhd_medicaid = sum(RXMD, na.rm = TRUE, digits = 2),
+    adhd_medicare = sum(RXMR, na.rm = TRUE, digits = 2),
     .groups = "drop"
   ) %>%
   mutate(
-    oop_share = if_else(adhd_total_spend > 0, adhd_oop / adhd_total_spend, NA_real_)
+    oop_share = if_else(adhd_total_spend > 0, adhd_oop / adhd_total_spend * 100, NA_real_)
   )
 
 fyc_2019_t2 <- fyc_2019_sub %>%
@@ -222,13 +207,19 @@ table2_all <- tbl_svysummary(
     adhd_private ~ "Private insurance ADHD spending (2021 USD)",
     adhd_medicaid ~ "Medicaid ADHD spending (2021 USD)",
     adhd_medicare ~ "Medicare ADHD spending (2021 USD)",
-    oop_share ~ "Out-of-pocket share of ADHD medication spending"
+    oop_share ~ "Out-of-pocket share of ADHD medication spending (%)"
   ),
   statistic = list(
-    adhd_any_rx ~ "{n} ({p}%)",
-    all_continuous() ~ "{mean} ({p25}, {p75})"
+    all_categorical() ~ "{n} ({p}%)",
+    all_continuous() ~ "{mean} ({sd})"
+    # adhd_total_spend ~ "{median} ({p25}, {p75})",
+    # adhd_oop ~ "{median} ({p25}, {p75})",
+    # adhd_private ~ "{median} ({p25}, {p75})",
+    # adhd_medicaid ~ "{median} ({p25}, {p75})",
+    # adhd_medicare ~ "{median} ({p25}, {p75})",
+    # oop_share ~ "{mean} ({sd})"
   ),
-  missing = "ifany"
+  missing = "no"
 ) %>%
   add_p() %>%
   bold_labels()
@@ -257,10 +248,11 @@ table2_users <- tbl_svysummary(
     adhd_private ~ "Private insurance ADHD spending (2021 USD)",
     adhd_medicaid ~ "Medicaid ADHD spending (2021 USD)",
     adhd_medicare ~ "Medicare ADHD spending (2021 USD)",
-    oop_share ~ "Out-of-pocket share of ADHD medication spending"
+    oop_share ~ "Out-of-pocket share of ADHD medication spending (%)"
   ),
   statistic = list(
-    all_continuous() ~ "{mean} ({p25}, {p75})"
+    all_categorical() ~ "{n} ({p}%)",
+    all_continuous() ~ "{mean} ({sd})"
   ),
   missing = "ifany"
 ) %>%
@@ -276,8 +268,6 @@ table2_combined <- tbl_merge(
   )
 )
 
-table2_combined
-
 # Save merged table
 table2_combined_gt <- as_gt(table2_combined)
-gt::gtsave(table2_combined_gt, filename = file.path("exports", "table2_combined.html"))
+gt::gtsave(table2_combined_gt, filename = file.path("exports", "table2_combined.docx"))

@@ -108,13 +108,7 @@ table3 <- tbl_svysummary(
   missing = "no"
 ) %>%
   add_p() %>%
-  bold_labels() %>%
-  modify_footnote(
-    all_stat_cols() ~ "n (%)"
-  ) %>%
-  modify_footnote(
-    p.value ~ "Pearson's X^2: Rao & Scott adjustment"
-  ) %>%
+  bold_labels() %>% 
   modify_table_styling(
     columns = label,
     footnote = "Viloxazine use was 0% in both 2019 and 2021 and is not shown."
