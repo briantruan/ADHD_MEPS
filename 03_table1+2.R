@@ -258,7 +258,7 @@ table2_users <- tbl_svysummary(
     oop_share ~ "Out-of-pocket share of ADHD medication spending"
   ),
   statistic = list(
-    all_continuous() ~ "{median} ({p25}, {p75})"
+    all_continuous() ~ "{mean} ({p25}, {p75})"
   ),
   missing = "ifany"
 ) %>%
