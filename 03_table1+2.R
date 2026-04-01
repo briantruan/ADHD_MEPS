@@ -1,3 +1,8 @@
+library(dplyr)
+library(tidyr)
+library(survey)
+library(gtsummary)
+library(gt)
 options(survey.lonely.psu = "adjust")
 
 ids_both <- intersect(fyc_2019$DUPERSID, fyc_2021$DUPERSID)
@@ -113,18 +118,25 @@ table1 <- tbl_svysummary(
 
 table1 <- add_p(table1)
 table1 <- bold_labels(table1)
-
 table1
 
 table1_gt <- as_gt(table1)
 gt::gtsave(table1_gt, filename = file.path("exports", "table1.docx"))
 
+# CPI adjustment to 2021 dollars
+cpi_2019  <- 256.974
+cpi_2021  <- 278.802
+cpi_ratio <- cpi_2021 / cpi_2019
 
 adhd_rx_summary <- rx_ndc %>%
   mutate(
     across(c(RXSF, RXMR, RXMD, RXPV, RXVA, RXTR, RXOF, RXSL, RXWC, RXOT, RXXP),
            ~ as.numeric(as.character(.))),
     RXDAYSUP = as.numeric(as.character(RXDAYSUP))
+  ) %>%
+  mutate(
+    across(c(RXSF, RXMR, RXMD, RXPV, RXVA, RXTR, RXOF, RXSL, RXWC, RXOT, RXXP),
+           ~ if_else(year == 2019, .x * cpi_ratio, .x))
   ) %>%
   group_by(DUPERSID, year) %>%
   summarise(
@@ -184,7 +196,8 @@ meps_design_t2 <- svydesign(
   nest = TRUE
 )
 
-table2 <- tbl_svysummary(
+# Full ADHD cohort
+table2_all <- tbl_svysummary(
   meps_design_t2,
   by = year,
   include = c(
@@ -202,22 +215,67 @@ table2 <- tbl_svysummary(
     adhd_any_rx ~ "Any ADHD medication",
     adhd_rx_n ~ "Number of ADHD prescriptions",
     adhd_daysup_total ~ "Total ADHD medication days supplied",
-    adhd_total_spend ~ "Total ADHD medication spending (USD)",
-    adhd_oop ~ "Out-of-pocket ADHD spending (USD)",
-    adhd_private ~ "Private insurance ADHD spending (USD)",
-    adhd_medicaid ~ "Medicaid ADHD spending (USD)",
-    adhd_medicare ~ "Medicare ADHD spending (USD)",
+    adhd_total_spend ~ "Total ADHD medication spending (2021 USD)",
+    adhd_oop ~ "Out-of-pocket ADHD spending (2021 USD)",
+    adhd_private ~ "Private insurance ADHD spending (2021 USD)",
+    adhd_medicaid ~ "Medicaid ADHD spending (2021 USD)",
+    adhd_medicare ~ "Medicare ADHD spending (2021 USD)",
     oop_share ~ "Out-of-pocket share of ADHD medication spending"
   ),
   statistic = list(
     adhd_any_rx ~ "{n} ({p}%)",
-    all_continuous() ~ "{mean} ({p25}, {p75})"
+    all_continuous() ~ "{median} ({p25}, {p75})"
   ),
   missing = "ifany"
+) %>%
+  add_p() %>%
+  bold_labels()
+
+# Subset analysis: only those with any ADHD medication
+meps_design_t2_users <- subset(meps_design_t2, adhd_any_rx == "Yes")
+
+table2_users <- tbl_svysummary(
+  meps_design_t2_users,
+  by = year,
+  include = c(
+    adhd_rx_n,
+    adhd_daysup_total,
+    adhd_total_spend,
+    adhd_oop,
+    adhd_private,
+    adhd_medicaid,
+    adhd_medicare,
+    oop_share
+  ),
+  label = list(
+    adhd_rx_n ~ "Number of ADHD prescriptions",
+    adhd_daysup_total ~ "Total ADHD medication days supplied",
+    adhd_total_spend ~ "Total ADHD medication spending (2021 USD)",
+    adhd_oop ~ "Out-of-pocket ADHD spending (2021 USD)",
+    adhd_private ~ "Private insurance ADHD spending (2021 USD)",
+    adhd_medicaid ~ "Medicaid ADHD spending (2021 USD)",
+    adhd_medicare ~ "Medicare ADHD spending (2021 USD)",
+    oop_share ~ "Out-of-pocket share of ADHD medication spending"
+  ),
+  statistic = list(
+    all_continuous() ~ "{median} ({p25}, {p75})"
+  ),
+  missing = "ifany"
+) %>%
+  add_p() %>%
+  bold_labels()
+
+# Optional merged table
+table2_combined <- tbl_merge(
+  tbls = list(table2_all, table2_users),
+  tab_spanner = c(
+    "**All ADHD respondents**",
+    "**Among those with any ADHD medication**"
+  )
 )
 
-table2 <- add_p(table2)
-table2 <- bold_labels(table2)
+table2_combined
 
-table2_gt <- as_gt(table2)
-gt::gtsave(table2_gt, filename = file.path("exports", "table2.docx"))
+# Save merged table
+table2_combined_gt <- as_gt(table2_combined)
+gt::gtsave(table2_combined_gt, filename = file.path("exports", "table2_combined.html"))
