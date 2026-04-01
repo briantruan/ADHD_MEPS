@@ -1,3 +1,4 @@
+
 library(dplyr)
 library(tidyr)
 library(survey)
@@ -132,7 +133,8 @@ adhd_rx_summary <- rx_ndc %>%
   mutate(
     across(c(RXSF, RXMR, RXMD, RXPV, RXVA, RXTR, RXOF, RXSL, RXWC, RXOT, RXXP),
            ~ as.numeric(as.character(.))),
-    RXDAYSUP = as.numeric(as.character(RXDAYSUP))
+    RXDAYSUP = as.numeric(as.character(RXDAYSUP)),
+    RXDAYSUP = if_else(RXDAYSUP < 0, NA_real_, RXDAYSUP)
   ) %>%
   mutate(
     across(c(RXSF, RXMR, RXMD, RXPV, RXVA, RXTR, RXOF, RXSL, RXWC, RXOT, RXXP),
@@ -213,7 +215,7 @@ table2_all <- tbl_svysummary(
   ),
   label = list(
     adhd_any_rx ~ "Any ADHD medication",
-    adhd_rx_n ~ "Number of ADHD prescriptions",
+    adhd_rx_n ~ "Number of ADHD medication fills recorded for that person in that year",
     adhd_daysup_total ~ "Total ADHD medication days supplied",
     adhd_total_spend ~ "Total ADHD medication spending (2021 USD)",
     adhd_oop ~ "Out-of-pocket ADHD spending (2021 USD)",
@@ -224,7 +226,7 @@ table2_all <- tbl_svysummary(
   ),
   statistic = list(
     adhd_any_rx ~ "{n} ({p}%)",
-    all_continuous() ~ "{median} ({p25}, {p75})"
+    all_continuous() ~ "{mean} ({p25}, {p75})"
   ),
   missing = "ifany"
 ) %>%
@@ -248,7 +250,7 @@ table2_users <- tbl_svysummary(
     oop_share
   ),
   label = list(
-    adhd_rx_n ~ "Number of ADHD prescriptions",
+    adhd_rx_n ~ "Number of ADHD medication fills recorded for that person in that year",
     adhd_daysup_total ~ "Total ADHD medication days supplied",
     adhd_total_spend ~ "Total ADHD medication spending (2021 USD)",
     adhd_oop ~ "Out-of-pocket ADHD spending (2021 USD)",
