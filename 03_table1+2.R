@@ -175,7 +175,7 @@ fyc_2021_t2 <- fyc_2021_sub %>%
 
 fyc_combined_t2 <- bind_rows(fyc_2019_t2, fyc_2021_t2)
 
-meps_design_t2 <- svydesign(
+meps_design_final <- svydesign(
   id = ~VARPSU,
   strata = ~VARSTR,
   weights = ~PERWT,
@@ -185,7 +185,7 @@ meps_design_t2 <- svydesign(
 
 # Full ADHD cohort
 table2_all <- tbl_svysummary(
-  meps_design_t2,
+  meps_design_final,
   by = year,
   include = c(
     adhd_any_rx,
@@ -225,10 +225,10 @@ table2_all <- tbl_svysummary(
   bold_labels()
 
 # Subset analysis: only those with any ADHD medication
-meps_design_t2_users <- subset(meps_design_t2, adhd_any_rx == "Yes")
+meps_design_final_users <- subset(meps_design_final, adhd_any_rx == "Yes")
 
 table2_users <- tbl_svysummary(
-  meps_design_t2_users,
+  meps_design_final_users,
   by = year,
   include = c(
     adhd_rx_n,
