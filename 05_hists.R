@@ -32,36 +32,21 @@ p_rx <- ggplot(df, aes(x = adhd_rx_n, weight = wt, fill = year)) +
   geom_histogram(position = "identity", alpha = 0.5, bins = max(10, length(unique(na.omit(df$adhd_rx_n))))) +
   scale_y_continuous(labels = scales::label_number(scale = 1/10000)) +
   scale_fill_manual(values = cols) +
-  labs(title = "Distribution of ADHD Rx Count in 2019 vs 2021", x = "Number of ADHD Rx", y = "Weighted count (10000s)")
+  labs(title = "Distribution of ADHD Rx Count in 2019 vs 2021", x = "Number of ADHD Rx", y = "Weighted count (10000s)") +
+  coord_cartesian(xlim = c(0, 10))
 
 p_spend <- ggplot(df, aes(x = adhd_total_spend, weight = wt, fill = year)) +
   geom_histogram(position = "identity", alpha = 0.5, bins = 60) +
   scale_y_continuous(labels = scales::label_number(scale = 1/10000)) +
   scale_fill_manual(values = cols) +
-  labs(title = "Distribution of Total ADHD Rx Spend in 2019 vs 2021", x = "Total ADHD Rx Spend (2021 dollars)", y = "Weighted count (10000s)")
+  labs(title = "Distribution of Total ADHD Rx Spend in 2019 vs 2021", x = "Total ADHD Rx Spend (2021 dollars)", y = "Weighted count (10000s)") +
+  coord_cartesian(xlim = c(0, 2000))
 
 p_oop <- ggplot(df, aes(x = adhd_oop, weight = wt, fill = year)) +
   geom_histogram(position = "identity", alpha = 0.5, bins = 60) +
   scale_y_continuous(labels = scales::label_number(scale = 1/10000)) +
   scale_fill_manual(values = cols) +
-  labs(title = "Distribution of Out-of-Pocket ADHD Rx Spend in 2019 vs 2021", x = "Out-of-Pocket ADHD Rx Spend (2021 dollars)", y = "Weighted count (10000s)")
+  labs(title = "Distribution of Out-of-Pocket ADHD Rx Spend in 2019 vs 2021", x = "Out-of-Pocket ADHD Rx Spend (2021 dollars)", y = "Weighted count (10000s)") +
+  coord_cartesian(xlim = c(0, 2000))
 
-p_adhd_rx <- ggplot(df, aes(x = adhd_rx_n, weight = wt, fill = year)) +
-  geom_histogram(position = "identity", alpha = 0.5, bins = max(10, length(unique(na.omit(df$adhd_rx_n))))) +
-  scale_y_continuous(labels = scales::label_number(scale = 1/10000)) +
-  scale_fill_manual(values = cols) +
-  labs(title = "Distribution of ADHD Rx Count in 2019 vs 2021, ADHD with Rx only", x = "Number of ADHD Rx", y = "Weighted count (10000s)")
-
-p_adhd_spend <- ggplot(df, aes(x = adhd_total_spend, weight = wt, fill = year)) +
-  geom_histogram(position = "identity", alpha = 0.5, bins = 60) +
-  scale_y_continuous(labels = scales::label_number(scale = 1/10000)) +
-  scale_fill_manual(values = cols) +
-  labs(title = "Distribution of Total ADHD Rx Spend in 2019 vs 2021, ADHD with Rx only", x = "Total ADHD Rx Spend (2021 dollars)", y = "Weighted count (10000s)")
-
-p_adhd_oop <- ggplot(df, aes(x = adhd_oop, weight = wt, fill = year)) +
-  geom_histogram(position = "identity", alpha = 0.5, bins = 60) +
-  scale_y_continuous(labels = scales::label_number(scale = 1/10000)) +
-  scale_fill_manual(values = cols) +
-  labs(title = "Distribution of Out-of-Pocket ADHD Rx Spend in 2019 vs 2021, ADHD with Rx only", x = "Out-of-Pocket ADHD Rx Spend (2021 dollars)", y = "Weighted count (10000s)")
-
-list(p_rx = p_rx, p_spend = p_spend, p_oop = p_oop, p_adhd_rx = p_adhd_rx, p_adhd_spend = p_adhd_spend, p_adhd_oop = p_adhd_oop)
+list(p_rx = p_rx, p_spend = p_spend, p_oop = p_oop)
