@@ -69,6 +69,3 @@ rx_ndc <- list(rx_2019 = rx_2019, rx_2021 = rx_2021) |>
       ) %>%
       mutate(year = as.integer(str_remove(.y, "^rx_")))
   )
-
-# include atomoxetine and viloxazine (SNRIs that are only FDA approved for ADHD).
-# other nonstimulants (guanfacine, clonidine) are approved for other conditions and are thus excluded

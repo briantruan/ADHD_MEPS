@@ -1,3 +1,5 @@
+# TODO: use the CLINK files to link speciifc, e.g., rx and condition files to ensure that we are limiting to the same analytic sample across all analyses
+
 options(survey.lonely.psu = "adjust")
 
 ids_both <- intersect(fyc_2019$DUPERSID, fyc_2021$DUPERSID)
@@ -55,7 +57,12 @@ fyc_combined <- bind_rows(fyc_2019_sub, fyc_2021_sub)
 # because children are kept in the sample, income_2021 median is skewing towards 0.
 # let's take median among adults (18+)
 fyc_combined <- fyc_combined %>%
-  mutate(adult_income_2021 = if_else(AGE53X >= 18, income_2021, NA_real_))
+  mutate(adult_income_2021 = if_else(AGE53X >= 18, income_2021, NA_real_)) %>% 
+  # remove Medicare only, Medicare, with private, Medicare, with other public, and Medicare, dual-eligible
+  filter(insurance != "Medicare only") %>%
+  filter(insurance != "Medicare, with private") %>%
+  filter(insurance != "Medicare, with other public") %>%
+  filter(insurance != "Medicare, dual-eligible")
 
 meps_design <- svydesign(
   id = ~VARPSU,
@@ -64,6 +71,8 @@ meps_design <- svydesign(
   data = fyc_combined,
   nest = TRUE
 )
+
+# TODO: add prevalence
 
 table1 <- tbl_svysummary(
   meps_design,

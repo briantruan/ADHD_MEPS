@@ -50,3 +50,11 @@ p_oop <- ggplot(df, aes(x = adhd_oop, weight = wt, fill = year)) +
   coord_cartesian(xlim = c(0, 2000))
 
 list(p_rx = p_rx, p_spend = p_spend, p_oop = p_oop)
+
+# use svyhist
+
+# test_hist <- svyhist(
+#   ~adhd_rx_n,
+#   design = meps_design_final,
+#   subset = year == 2019 & adhd_any_rx == "Yes"
+# )

@@ -9,9 +9,9 @@ test_model <- svyglm(
 summary(test_model)
 
 reg_kitchen_sink <- svyglm(
-  adhd_total_spend ~ year + AGE53X + sex + ethnicity + marital + 
-                     education + has_insurance + medicaid + 
-                     medicare + income_2021,
+  log(1+adhd_oop) ~ year + AGE53X + sex + ethnicity + marital + 
+                     education + has_insurance + 
+                     income_2021,
   design = meps_design_final
 )
 summary(reg_kitchen_sink)
