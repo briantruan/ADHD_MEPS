@@ -58,11 +58,15 @@ fyc_combined <- bind_rows(fyc_2019_sub, fyc_2021_sub)
 # let's take median among adults (18+)
 fyc_combined <- fyc_combined %>%
   mutate(adult_income_2021 = if_else(AGE53X >= 18, income_2021, NA_real_)) %>% 
-  # remove Medicare only, Medicare, with private, Medicare, with other public, and Medicare, dual-eligible
-  filter(insurance != "Medicare only") %>%
-  filter(insurance != "Medicare, with private") %>%
-  filter(insurance != "Medicare, with other public") %>%
-  filter(insurance != "Medicare, dual-eligible")
+  mutate(
+    adult_income_2021 = if_else(AGE53X >= 18, income_2021, NA_real_),
+    insurance_table1 = if_else(
+      str_detect(insurance, "Medicare"),
+      NA_character_,
+      insurance
+    ),
+    insurance_table1 = factor(insurance_table1)
+  )
 
 meps_design <- svydesign(
   id = ~VARPSU,
@@ -84,12 +88,12 @@ table1 <- tbl_svysummary(
     ethnicity,
     education,
     has_insurance,
-    insurance,
+    insurance_table1,
     adult_income_2021,
     totslf_2021
   ),
   sort = list(
-    insurance ~ "alphanumeric"
+    insurance_table1 ~ "alphanumeric"
   ),
   label = list(
     AGE53X ~ "Age, years",
@@ -98,7 +102,7 @@ table1 <- tbl_svysummary(
     ethnicity ~ "Ethnicity",
     education ~ "Education",
     has_insurance ~ "Has insurance", 
-    insurance ~ "Type of insurance",
+    insurance_table1 ~ "Type of insurance",
     adult_income_2021 ~ "Household (18+ years) income (2021 USD)",
     totslf_2021 ~ "Total spending (2021 USD)"
   ),
