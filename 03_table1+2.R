@@ -1,5 +1,3 @@
-#TODO: use the CLINK files to link speciifc, e.g., rx and condition files to ensure that we are limiting to the same analytic sample across all analyses
-
 options(survey.lonely.psu = "adjust")
 
 ids_both <- intersect(fyc_2019$DUPERSID, fyc_2021$DUPERSID)
@@ -137,11 +135,7 @@ table1
 table1_gt <- as_gt(table1)
 gt::gtsave(table1_gt, filename = file.path("exports", "table1.docx"))
 
-
-# CPI adjustment to 2021 dollars
-cpi_2019  <- 256.974
-cpi_2021  <- 278.802
-cpi_ratio <- cpi_2021 / cpi_2019
+# ---- TABLE 2 ----
 
 adhd_rx_summary <- rx_ndc %>%
   mutate(

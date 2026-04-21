@@ -21,6 +21,12 @@ link_2021 <- all_data$link_2021
 rm(all_data)
 gc()
 
+# in fyc_2019, some things are inappropriately haven labelled
+# convert haven labels to numeric
+inappropriate_labels <- c("OBTOTV", "OPTOTV", "IPDIS", "IPNGTD", "ERTOT")
+fyc_2019 <- fyc_2019 %>%
+  mutate(across(any_of(inappropriate_labels), ~ as.numeric(as.character(.x))))
+
 # convert haven labels to factors in df fyc 
 # remove preceding numbers from factor levels
 clean_labels <- function(x) {

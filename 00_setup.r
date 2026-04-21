@@ -45,19 +45,21 @@ load_meps_year <- function(year) {
   ipngtd <- paste0("IPNGTD", short_year)
   rxtot  <- paste0("RXTOT",  short_year)
   ertot  <- paste0("ERTOT",  short_year)
-  
-  # RX payment vars
-  rxsf <- paste0("RXSF", short_year, "X")
-  rxmr <- paste0("RXMR", short_year, "X")
-  rxmd <- paste0("RXMD", short_year, "X")
-  rxpv <- paste0("RXPV", short_year, "X")
-  rxva <- paste0("RXVA", short_year, "X")
-  rxtr <- paste0("RXTR", short_year, "X")
-  rxof <- paste0("RXOF", short_year, "X")
-  rxsl <- paste0("RXSL", short_year, "X")
-  rxwc <- paste0("RXWC", short_year, "X")
-  rxot <- paste0("RXOT", short_year, "X")
-  rxxp <- paste0("RXXP", short_year, "X")
+
+  # we will select everything; no need to specify here
+
+  # # RX payment vars
+  # rxsf <- paste0("RXSF", short_year, "X")
+  # rxmr <- paste0("RXMR", short_year, "X")
+  # rxmd <- paste0("RXMD", short_year, "X")
+  # rxpv <- paste0("RXPV", short_year, "X")
+  # rxva <- paste0("RXVA", short_year, "X")
+  # rxtr <- paste0("RXTR", short_year, "X")
+  # rxof <- paste0("RXOF", short_year, "X")
+  # rxsl <- paste0("RXSL", short_year, "X")
+  # rxwc <- paste0("RXWC", short_year, "X")
+  # rxot <- paste0("RXOT", short_year, "X")
+  # rxxp <- paste0("RXXP", short_year, "X")
   
   vars_to_keep <- c(
     "DUPERSID", "PANEL", "VARSTR", "VARPSU", perwt, ttlp,
@@ -67,22 +69,26 @@ load_meps_year <- function(year) {
     "HAVEUS42", inscov, insurc, "MCAID53X",
     totslf, obtotv, optotv, ipdis, ipngtd, rxtot, ertot
   )
+
+  # since there are not that many variables, let's read in everything
+  # and select later
   
-  cond_vars <- c(
-    "DUPERSID", "ICD10CDX", "OPNUM", "OPCOND",
-    "OBNUM", "OBCOND",
-    "IPNUM", "IPCOND",
-    "ERNUM", "ERCOND",
-    "HHNUM", "HHCOND",
-    "AGEDIAG", "RXNUM"
-  )
+  # cond_vars <- c(
+  #   "DUPERSID", "ICD10CDX", "OPNUM", "OPCOND",
+  #   "OBNUM", "OBCOND",
+  #   "IPNUM", "IPCOND",
+  #   "ERNUM", "ERCOND",
+  #   "HHNUM", "HHCOND",
+  #   "AGEDIAG", "RXNUM"
+  # )
   
-  rx_vars <- c(
-    "DUPERSID", "RXBEGYRX", "RXBEGMM",
-    "RXDRGNAM", "RXNDC", "RXDAYSUP",
-    "RXCOND", 
-    rxsf, rxmr, rxmd, rxpv, rxva, rxtr, rxof, rxsl, rxwc, rxot, rxxp
-  )
+  # rx_vars <- c(
+  #   "DUPERSID", "RXBEGYRX", "RXBEGMM",
+  #   "RXDRGNAM", "RXNDC", "RXDAYSUP", "RXCOND", 
+  #   # --- LINKAGE ---
+  #   "LINKIDX", "PURCHRD",
+  #   rxsf, rxmr, rxmd, rxpv, rxva, rxtr, rxof, rxsl, rxwc, rxot, rxxp
+  # )
   
   fyc <- read_MEPS(year = year, type = "FYC") %>%
     select(any_of(vars_to_keep)) %>%
@@ -100,24 +106,24 @@ load_meps_year <- function(year) {
       ERTOT  = all_of(ertot)
     )
   
-  cond <- read_MEPS(year = year, type = "COND") %>%
-    select(any_of(cond_vars))
+  cond <- read_MEPS(year = year, type = "COND") # %>%
+    # select(any_of(cond_vars))
   
-  rx <- read_MEPS(year = year, type = "RX") %>%
-    select(any_of(rx_vars)) %>%
-    rename(
-      RXSF = all_of(rxsf),
-      RXMR = all_of(rxmr),
-      RXMD = all_of(rxmd),
-      RXPV = all_of(rxpv),
-      RXVA = all_of(rxva),
-      RXTR = all_of(rxtr),
-      RXOF = all_of(rxof),
-      RXSL = all_of(rxsl),
-      RXWC = all_of(rxwc),
-      RXOT = all_of(rxot),
-      RXXP = all_of(rxxp)
-    )
+  rx <- read_MEPS(year = year, type = "RX") # %>%
+    # select(any_of(rx_vars)) %>%
+    # rename(
+    #   RXSF = all_of(rxsf),
+    #   RXMR = all_of(rxmr),
+    #   RXMD = all_of(rxmd),
+    #   RXPV = all_of(rxpv),
+    #   RXVA = all_of(rxva),
+    #   RXTR = all_of(rxtr),
+    #   RXOF = all_of(rxof),
+    #   RXSL = all_of(rxsl),
+    #   RXWC = all_of(rxwc),
+    #   RXOT = all_of(rxot),
+    #   RXXP = all_of(rxxp)
+    # )
   
   link <- read_MEPS(year = year, type = "CLNK")
   
@@ -142,4 +148,4 @@ save_all_years <- function(years = 2017:2023, out_file = file.path("data", "meps
   invisible(out_file)
 }
 
-# save_all_years(c(2019, 2021))
+save_all_years(c(2019, 2021))

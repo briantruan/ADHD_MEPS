@@ -42,6 +42,11 @@ ndc_stim$ndc_compatible <- str_remove_all(ndc_stim$`NDC Package Code`, "-")
 ndc_stim <- ndc_stim %>% 
   mutate(ndc_compatible = str_pad(ndc_compatible, width = 11, side = "left", pad = "0"))
 
+# in rx_2019 and rx_2021, remove year specific suffix (e.g., RXSF19X -> RXSF)
+# year-specific vars: RXSF, RXMR, RXMD, RXPV, RXVA, RXTR, RXOF, RXSL, RXWC, RXOT, RXXP
+rx_2019 <- rx_2019 %>% rename_with(~ str_remove(.x, "19X$"), matches("19X$"))
+rx_2021 <- rx_2021 %>% rename_with(~ str_remove(.x, "21X$"), matches("21X$"))
+
 rx_ndc <- list(rx_2019 = rx_2019, rx_2021 = rx_2021) |>
   imap_dfr(
     ~ .x %>%
