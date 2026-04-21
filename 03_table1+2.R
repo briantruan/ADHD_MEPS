@@ -1,4 +1,4 @@
-# TODO: use the CLINK files to link speciifc, e.g., rx and condition files to ensure that we are limiting to the same analytic sample across all analyses
+#TODO: use the CLINK files to link speciifc, e.g., rx and condition files to ensure that we are limiting to the same analytic sample across all analyses
 
 options(survey.lonely.psu = "adjust")
 
@@ -54,10 +54,8 @@ fyc_2021_sub <- fyc_2021_sub %>%
 
 fyc_combined <- bind_rows(fyc_2019_sub, fyc_2021_sub)
 
-# because children are kept in the sample, income_2021 median is skewing towards 0.
-# let's take median among adults (18+)
+# ---- NEW AGE + SEX VARIABLES FOR TABLE 1 ----
 fyc_combined <- fyc_combined %>%
-  mutate(adult_income_2021 = if_else(AGE53X >= 18, income_2021, NA_real_)) %>% 
   mutate(
     adult_income_2021 = if_else(AGE53X >= 18, income_2021, NA_real_),
     insurance_table1 = if_else(
@@ -65,7 +63,26 @@ fyc_combined <- fyc_combined %>%
       NA_character_,
       insurance
     ),
-    insurance_table1 = factor(insurance_table1)
+    insurance_table1 = factor(insurance_table1),
+    
+    age_group = case_when(
+      AGE53X < 18 ~ "Child (<18 years)",
+      AGE53X >= 18 ~ "Adult (18+ years)",
+      TRUE ~ NA_character_
+    ),
+    age_group = factor(age_group, levels = c("Child (<18 years)", "Adult (18+ years)")),
+    
+    age_sex_group = case_when(
+      AGE53X < 18 & sex == "Male" ~ "Child, male",
+      AGE53X < 18 & sex == "Female" ~ "Child, female",
+      AGE53X >= 18 & sex == "Male" ~ "Adult, male",
+      AGE53X >= 18 & sex == "Female" ~ "Adult, female",
+      TRUE ~ NA_character_
+    ),
+    age_sex_group = factor(
+      age_sex_group,
+      levels = c("Child, male", "Child, female", "Adult, male", "Adult, female")
+    )
   )
 
 meps_design <- svydesign(
@@ -76,14 +93,13 @@ meps_design <- svydesign(
   nest = TRUE
 )
 
-# TODO: add prevalence
-
+# ---- UPDATED TABLE 1 ----
 table1 <- tbl_svysummary(
   meps_design,
   by = year,
   include = c(
-    AGE53X,
-    sex,
+    age_group,
+    age_sex_group,
     race,
     ethnicity,
     education,
@@ -96,24 +112,23 @@ table1 <- tbl_svysummary(
     insurance_table1 ~ "alphanumeric"
   ),
   label = list(
-    AGE53X ~ "Age, years",
-    sex ~ "Sex",
+    age_group ~ "Age group",
+    age_sex_group ~ "Age-sex subgroup",
     race ~ "Race",
     ethnicity ~ "Ethnicity",
     education ~ "Education",
-    has_insurance ~ "Has insurance", 
+    has_insurance ~ "Has insurance",
     insurance_table1 ~ "Type of insurance",
     adult_income_2021 ~ "Household (18+ years) income (2021 USD)",
     totslf_2021 ~ "Total spending (2021 USD)"
   ),
   statistic = list(
-    AGE53X ~ "{mean} ({sd})",
+    all_categorical() ~ "{n} ({p}%)",
     adult_income_2021 ~ "{median} ({p25}, {p75})",
-    totslf_2021 ~ "{median} ({p25}, {p75})",
-    all_categorical() ~ "{n} ({p}%)"
+    totslf_2021 ~ "{median} ({p25}, {p75})"
   ),
   missing = "no"
-) %>% 
+) %>%
   add_p() %>%
   bold_labels()
 
@@ -121,6 +136,7 @@ table1
 
 table1_gt <- as_gt(table1)
 gt::gtsave(table1_gt, filename = file.path("exports", "table1.docx"))
+
 
 # CPI adjustment to 2021 dollars
 cpi_2019  <- 256.974
