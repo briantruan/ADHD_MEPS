@@ -80,6 +80,7 @@ load_meps_year <- function(year) {
   rx_vars <- c(
     "DUPERSID", "RXBEGYRX", "RXBEGMM",
     "RXDRGNAM", "RXNDC", "RXDAYSUP",
+    "RXCOND", 
     rxsf, rxmr, rxmd, rxpv, rxva, rxtr, rxof, rxsl, rxwc, rxot, rxxp
   )
   
@@ -118,7 +119,10 @@ load_meps_year <- function(year) {
       RXXP = all_of(rxxp)
     )
   
-  list(fyc = fyc, cond = cond, rx = rx)
+  link <- read_MEPS(year = year, type = "CLNK")
+  
+  list(fyc = fyc, cond = cond, rx = rx, link = link)
+
 }
 
 save_all_years <- function(years = 2017:2023, out_file = file.path("data", "meps_all_years.rds")) {
@@ -131,10 +135,11 @@ save_all_years <- function(years = 2017:2023, out_file = file.path("data", "meps
     all_data[[paste0("fyc", suffix)]]  <- d$fyc
     all_data[[paste0("cond", suffix)]] <- d$cond
     all_data[[paste0("rx", suffix)]]   <- d$rx
+    all_data[[paste0("link", suffix)]] <- d$link
   }
   
   saveRDS(all_data, file = out_file)
   invisible(out_file)
 }
 
-# save_all_years(2017:2023)
+# save_all_years(c(2019, 2021))

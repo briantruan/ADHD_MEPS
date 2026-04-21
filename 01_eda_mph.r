@@ -14,6 +14,8 @@ cond_2019 <- all_data$cond_2019
 cond_2021 <- all_data$cond_2021
 rx_2019 <- all_data$rx_2019
 rx_2021 <- all_data$rx_2021
+link_2019 <- all_data$link_2019
+link_2021 <- all_data$link_2021
 
 # clear var all_data
 rm(all_data)
