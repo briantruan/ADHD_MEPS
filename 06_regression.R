@@ -2,6 +2,24 @@
 
 # adhd_rx_n is outcome variable, year is main independent variable
 
+# use model:
+# For fills (quasipoisson example)
+fit_fills <- svyglm(adhd_fills ~ post_covid,
+                    family = quasipoisson(), design = meps_design_subset_adhdfills)
+summary(fit_fills)
+regTermTest(fit_fills, "post_covid")  # Test change significance
+
+fit_total_spend <- svyglm(adhd_medicaid_log ~ post_covid, 
+                          family = gaussian(), 
+                          design = meps_design_subset_adhdfills)
+summary(fit_total_spend)
+
+
+
+
+
+# ---- IGNORE EVERYTHING BELOW ----
+
 test_model <- svyglm(
   adhd_rx_n ~ year,
   design = meps_design_final
