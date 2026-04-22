@@ -1,5 +1,9 @@
-options(survey.lonely.psu = "adjust")
+# Table 3: types of ADHD meds used among ADHD cohort
+# Goal: Create Table 3 with types of ADHD meds used 
+# among ADHD cohort, comparing 2019 vs 2021
+# includes people with fills only
 
+# standardize drug names
 standardize_adhd_med <- function(drug_name) {
   case_when(
     str_detect(toupper(drug_name), "LISDEXAMFETAMINE|VYVANSE") ~ "Lisdexamfetamine",
@@ -13,6 +17,9 @@ standardize_adhd_med <- function(drug_name) {
     TRUE ~ NA_character_
   )
 }
+
+# use svydesign meps_design_subset_adhdfills
+
 
 rx_2019_adhd <- rx_2019 %>%
   filter(DUPERSID %in% analytic_ids) %>%

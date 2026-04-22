@@ -148,4 +148,4 @@ save_all_years <- function(years = 2017:2023, out_file = file.path("data", "meps
   invisible(out_file)
 }
 
-# save_all_years(c(2019, 2021))
+# save_all_years()

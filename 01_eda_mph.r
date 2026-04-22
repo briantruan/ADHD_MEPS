@@ -46,6 +46,9 @@ cpi_ratio <- cpi_2021 / cpi_2019
 fyc_2019$income_2021 <- fyc_2019$TTLP * cpi_ratio
 fyc_2019$totslf_2021 <- fyc_2019$TOTSLF * cpi_ratio
 
+fyc_2021$income_2021 <- fyc_2021$TTLP
+fyc_2021$totslf_2021 <- fyc_2021$TOTSLF
+
 # pcs/mcs: if not numeric, NA
 fyc_2019 <- fyc_2019 %>% mutate(across(c(VPCS42, VMCS42), ~ as.numeric(.x)))
 fyc_2021 <- fyc_2021 %>% mutate(across(c(VPCS42, VMCS42), ~ as.numeric(.x)))
