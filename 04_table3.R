@@ -3,6 +3,48 @@
 # among ADHD cohort, comparing 2019 vs 2021
 # includes people with fills only
 
+# use design variable meps_design_subset_adhdfills
+# variable name drug_names is the names of drugs used
+# delimited by semicolon
+# count the number of each drug or combination of drugs used
+
+# rename from all caps to title case
+meps_design_subset_adhdfills <- meps_design_subset_adhdfills %>%
+  update(
+    drug_names = str_to_title(drug_names)
+  ) %>% 
+  # recode drug names to more user-friendly labels
+  update(
+    drug_names = case_when(
+      str_detect(drug_names, "Amphetamine-Dextroamphetamine") ~ "Amphetamines",
+      str_detect(drug_names, "Amphetamine-Dextroamphetamine; Clonidine") ~ "Mixed therapy",
+      str_detect(drug_names, "Amphetamine-Dextroamphetamine; Methylphenidate") ~ "Mixed therapy",
+      str_detect(drug_names, "Clonidine; Dexmethylphenidate") ~ "Mixed therapy",
+      str_detect(drug_names, "Dexmethylphenidate; Guanfacine") ~ "Mixed therapy",
+      str_detect(drug_names, "Bupropion") ~ NA_character_,
+      TRUE ~ drug_names
+    )
+  )
+
+table3 <- tbl_svysummary(
+  meps_design_subset_adhdfills,
+  by = year,
+  include = drug_names,
+  label = list(drug_names ~ "ADHD medication types"),
+  statistic = all_continuous() ~ "{n} ({p}%)",
+  missing = "no"
+) %>% 
+  add_p() %>%
+  bold_labels() %>% 
+  modify_table_styling(
+    columns = label,
+    footnote = "Participants who were on different formulations of the same drug (e.g., normal and extended-release) were included in the same category and not under \"Mixed therapy.\""
+  )
+
+table3
+
+# ---- OLD CODE ----
+
 # standardize drug names
 standardize_adhd_med <- function(drug_name) {
   case_when(

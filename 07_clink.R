@@ -163,11 +163,11 @@ fyc_adhd_2021 <- fyc_adhd_2021 %>% filter(DUPERSID %in% ids_both)
 
 # 11. flag for ADHD in either year using cond files
 adhd_cond_2019 <- cond_2019 %>% 
-  filter(str_detect(ICD10CDX, "^F90")) %>% 
+  filter(str_detect(ICD10CDX, "F90")) %>% 
   distinct(DUPERSID) %>% 
   mutate(flag_adhd_dx = 1)
 adhd_cond_2021 <- cond_2021 %>% 
-  filter(str_detect(ICD10CDX, "^F90")) %>% 
+  filter(str_detect(ICD10CDX, "F90")) %>% 
   distinct(DUPERSID) %>% 
   mutate(flag_adhd_dx = 1)
 fyc_adhd_2019 <- fyc_adhd_2019 %>% 

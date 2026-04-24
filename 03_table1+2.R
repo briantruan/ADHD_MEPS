@@ -109,6 +109,8 @@ table1_gt <- as_gt(table1)
 gtsave(table1_gt, filename = file.path("exports", "table1.docx"))
 
 # ---- TABLE 2: among ADHD full cohort and with fills ----
+
+# ---- USELESS ----
 # table is kind of useless
 
 #  table2_all <- tbl_svysummary(
@@ -142,6 +144,8 @@ gtsave(table1_gt, filename = file.path("exports", "table1.docx"))
 #   bold_labels()
 
 # table2_all
+
+# ---- USE THIS ----
 
 # use design variable meps_design_subset_adhdfills
 table2_fills <- tbl_svysummary(
@@ -183,7 +187,10 @@ table2_fills <- tbl_svysummary(
   missing = "no"
 ) %>% 
   add_p() %>%
-  bold_labels()
+  bold_labels() %>% 
+  modify_table_styling(
+    columns = label,
+    footnote = "Participants who were on different formulations of the same drug (e.g., normal and extended-release) are characterized as using 2 unique ADHD drugs.")
 
 table2_fills
 
