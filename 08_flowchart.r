@@ -70,15 +70,15 @@ label='Matched respondents present in both 2019 and 2021\\nN = {fc$matched_indiv
 ]
 
 B [
-label='Age-eligible cohort (≤65 years)\\nN = {fc$age_le65_cohort}'
+label='Age-eligible cohort (≤63 years in 2019 & ≤65 years in 2021)\\nN = {fc$age_le65_cohort}'
 ]
 
 C [
-label='Table 1 analytic cohort\\nADHD diagnosis\\nN = {fc$table1_adhd_dx}'
+label='Has an ADHD diagnosis\\nN = {fc$table1_adhd_dx}'
 ]
 
 D [
-label='Table 2 analytic cohort\\nADHD diagnosis + medication fills\\nN = {fc$table2_adhd_fill}'
+label='nADHD diagnosis + medication fills\\nN = {fc$table2_adhd_fill}'
 ]
 
 E [
