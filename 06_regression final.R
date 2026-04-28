@@ -74,10 +74,10 @@ summary(model7)
 
 #Model 8 - Adding Income (Final)
 model8 <- svyglm(
-  adhd_fills ~ year + AGE53X + sex + race + education + insurance_table1 + adult_income_2021,
+  adhd_fills ~ year + AGE53X + sex + year:race + education + insurance_table1 + adult_income_2021,
   design = meps_design_subset_adhd,
   family = quasipoisson()
-)
+  )
 
 summary(model8)
 

@@ -41,6 +41,10 @@ fyc_clean <- fyc_clean %>%
       age_sex_group,
       levels = c("Child, male", "Child, female", "Adult, male", "Adult, female")
     )
+  ) %>% 
+  mutate(
+    race = relevel(factor(race), ref = "White"),
+    year = factor(year, levels = c(2019, 2021))
   )
 
 # ---- SURVEY SETUP ----
