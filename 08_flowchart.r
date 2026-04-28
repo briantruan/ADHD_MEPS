@@ -13,46 +13,35 @@ library(rsvg)
 if (!dir.exists("exports")) dir.create("exports", recursive = TRUE)
 
 # ---------------------------
-# INDIVIDUAL-LEVEL FLOW COUNTS
+# PERSON-YEAR FLOW COUNTS
 # ---------------------------
 
-flow_counts <- fyc_clean %>%
-  group_by(DUPERSID) %>%
-  summarize(
-    age_le_65 = all(AGE53X <= 65), 
-    any_adhd_dx = any(flag_adhd_dx == 1, na.rm = TRUE),
-    any_adhd_fill = any(
-      flag_adhd_dx == 1 & adhd_pmed_flag == 1,
-      na.rm = TRUE
-    ),
-    .groups = "drop"
+flow_counts_py <- fyc_clean %>%
+  mutate(
+    age_le_65 = AGE53X <= 65,
+    adhd_dx = flag_adhd_dx == 1,
+    adhd_dx_and_fill = flag_adhd_dx == 1 & adhd_pmed_flag == 1
   ) %>%
   summarize(
-    matched_individuals = n(),
+    matched_person_years = n(),
     
-    excluded_age_gt65 = sum(!age_le_65),
-    age_le65_cohort = sum(age_le_65),
+    excluded_age_gt65 = sum(!age_le_65, na.rm = TRUE),
+    age_le65_person_years = sum(age_le_65, na.rm = TRUE),
     
-    excluded_no_adhd_dx =
-      sum(age_le_65 & !any_adhd_dx),
+    excluded_no_adhd_dx = sum(age_le_65 & !adhd_dx, na.rm = TRUE),
+    adhd_dx_person_years = sum(age_le_65 & adhd_dx, na.rm = TRUE),
     
-    table1_adhd_dx =
-      sum(age_le_65 & any_adhd_dx),
-    
-    excluded_no_fill =
-      sum(age_le_65 & any_adhd_dx & !any_adhd_fill),
-    
-    table2_adhd_fill =
-      sum(age_le_65 & any_adhd_fill)
+    excluded_no_fill = sum(age_le_65 & adhd_dx & !adhd_dx_and_fill, na.rm = TRUE),
+    adhd_dx_fill_person_years = sum(age_le_65 & adhd_dx_and_fill, na.rm = TRUE)
   )
 
-fc <- flow_counts[1,]
+fc <- flow_counts_py[1, ]
 
 # ---------------------------
 # FLOW CHART
 # ---------------------------
 
-flowchart <- grViz(glue("
+flowchart_py <- grViz(glue("
 digraph flowchart {{
 
 graph [layout=dot, rankdir=TB]
@@ -62,37 +51,37 @@ node [
  style=rounded
  fontname=Helvetica
  fontsize=12
- width=4.6
+ width=4.8
 ]
 
 A [
-label='Matched respondents present in both 2019 and 2021\\nN = {fc$matched_individuals}'
+label='Matched respondents present in both 2019 and 2021\\nN = {fc$matched_person_years} person-year observations'
 ]
 
 B [
-label='Age-eligible cohort (≤65 years in both study years)\\nN = {fc$age_le65_cohort}'
+label='Age-eligible cohort\\nN = {fc$age_le65_person_years} person-year observations'
 ]
 
 C [
-label='Respondents with ADHD diagnosis (ICD-10 F90)\\nN = {fc$table1_adhd_dx}'
+label='Observations with ADHD diagnosis\\nN = {fc$adhd_dx_person_years} person-year observations'
 ]
 
 D [
-label='Respondents with ADHD diagnosis and linked medication fills\\nN = {fc$table2_adhd_fill}'
+label='Observations with ADHD diagnosis and linked ADHD medication fills\\nN = {fc$adhd_dx_fill_person_years} person-year observations'
 ]
 
 E [
-label='Excluded:age >65\\nN = {fc$excluded_age_gt65}'
+label='Excluded: age >65\\nN = {fc$excluded_age_gt65} person-year observations'
 style='rounded,dashed'
 ]
 
 F [
-label='Excluded: no ADHD diagnosis\\nN = {fc$excluded_no_adhd_dx}'
+label='Excluded: no ADHD diagnosis\\nN = {fc$excluded_no_adhd_dx} person-year observations'
 style='rounded,dashed'
 ]
 
 G [
-label='Excluded: no linked ADHD medication fills\\nN = {fc$excluded_no_fill}'
+label='Excluded: no linked ADHD medication fills\\nN = {fc$excluded_no_fill} person-year observations'
 style='rounded,dashed'
 ]
 
@@ -108,20 +97,20 @@ C -> G
 }}
 "))
 
-flowchart
+flowchart_py
 
 # ---------------------------
 # EXPORT
 # ---------------------------
 
-svg <- export_svg(flowchart)
+svg_py <- export_svg(flowchart_py)
 
-writeLines(svg, "exports/flowchart.svg")
-rsvg_png(charToRaw(svg), "exports/flowchart.png")
-rsvg_pdf(charToRaw(svg), "exports/flowchart.pdf")
+writeLines(svg_py, "exports/flowchart_person_years.svg")
+rsvg_png(charToRaw(svg_py), "exports/flowchart_person_years.png")
+rsvg_pdf(charToRaw(svg_py), "exports/flowchart_person_years.pdf")
 
 write.csv(
-  flow_counts,
-  "exports/flowchart_counts.csv",
+  flow_counts_py,
+  "exports/flowchart_person_year_counts.csv",
   row.names = FALSE
 )
