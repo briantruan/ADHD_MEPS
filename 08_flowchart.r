@@ -70,19 +70,19 @@ label='Matched respondents present in both 2019 and 2021\\nN = {fc$matched_indiv
 ]
 
 B [
-label='Age-eligible cohort (≤63 years in 2019 & ≤65 years in 2021)\\nN = {fc$age_le65_cohort}'
+label='Age-eligible cohort (≤65 years in both study years)\\nN = {fc$age_le65_cohort}'
 ]
 
 C [
-label='Has an ADHD diagnosis\\nN = {fc$table1_adhd_dx}'
+label='Respondents with ADHD diagnosis (ICD-10 F90)\\nN = {fc$table1_adhd_dx}'
 ]
 
 D [
-label='nADHD diagnosis + medication fills\\nN = {fc$table2_adhd_fill}'
+label='Respondents with ADHD diagnosis and linked medication fills\\nN = {fc$table2_adhd_fill}'
 ]
 
 E [
-label='Excluded age >65\\nN = {fc$excluded_age_gt65}'
+label='Excluded:age >65\\nN = {fc$excluded_age_gt65}'
 style='rounded,dashed'
 ]
 
