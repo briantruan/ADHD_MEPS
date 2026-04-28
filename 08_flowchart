@@ -1,0 +1,127 @@
+# 04_flowchart.R
+# Goal: Create an inclusion/exclusion flow chart directly from fyc_clean
+install.packages("DiagrammeR")
+install.packages("DiagrammeRsvg")
+install.packages("rsvg")
+
+library(dplyr)
+library(glue)
+library(DiagrammeR)
+library(DiagrammeRsvg)
+library(rsvg)
+
+if (!dir.exists("exports")) dir.create("exports", recursive = TRUE)
+
+# ---------------------------
+# INDIVIDUAL-LEVEL FLOW COUNTS
+# ---------------------------
+
+flow_counts <- fyc_clean %>%
+  group_by(DUPERSID) %>%
+  summarize(
+    age_le_65 = all(AGE53X <= 65), 
+    any_adhd_dx = any(flag_adhd_dx == 1, na.rm = TRUE),
+    any_adhd_fill = any(
+      flag_adhd_dx == 1 & adhd_pmed_flag == 1,
+      na.rm = TRUE
+    ),
+    .groups = "drop"
+  ) %>%
+  summarize(
+    matched_individuals = n(),
+    
+    excluded_age_gt65 = sum(!age_le_65),
+    age_le65_cohort = sum(age_le_65),
+    
+    excluded_no_adhd_dx =
+      sum(age_le_65 & !any_adhd_dx),
+    
+    table1_adhd_dx =
+      sum(age_le_65 & any_adhd_dx),
+    
+    excluded_no_fill =
+      sum(age_le_65 & any_adhd_dx & !any_adhd_fill),
+    
+    table2_adhd_fill =
+      sum(age_le_65 & any_adhd_fill)
+  )
+
+fc <- flow_counts[1,]
+
+# ---------------------------
+# FLOW CHART
+# ---------------------------
+
+flowchart <- grViz(glue("
+digraph flowchart {{
+
+graph [layout=dot, rankdir=TB]
+
+node [
+ shape=box
+ style=rounded
+ fontname=Helvetica
+ fontsize=12
+ width=4.6
+]
+
+A [
+label='Matched respondents present in both 2019 and 2021\\nN = {fc$matched_individuals}'
+]
+
+B [
+label='Age-eligible cohort (≤65 years)\\nN = {fc$age_le65_cohort}'
+]
+
+C [
+label='Table 1 analytic cohort\\nADHD diagnosis\\nN = {fc$table1_adhd_dx}'
+]
+
+D [
+label='Table 2 analytic cohort\\nADHD diagnosis + medication fills\\nN = {fc$table2_adhd_fill}'
+]
+
+E [
+label='Excluded age >65\\nN = {fc$excluded_age_gt65}'
+style='rounded,dashed'
+]
+
+F [
+label='Excluded: no ADHD diagnosis\\nN = {fc$excluded_no_adhd_dx}'
+style='rounded,dashed'
+]
+
+G [
+label='Excluded: no linked ADHD medication fills\\nN = {fc$excluded_no_fill}'
+style='rounded,dashed'
+]
+
+A -> B
+A -> E
+
+B -> C
+B -> F
+
+C -> D
+C -> G
+
+}}
+"))
+
+flowchart
+
+# ---------------------------
+# EXPORT
+# ---------------------------
+
+svg <- export_svg(flowchart)
+
+writeLines(svg, "exports/flowchart.svg")
+rsvg_png(charToRaw(svg), "exports/flowchart.png")
+rsvg_pdf(charToRaw(svg), "exports/flowchart.pdf")
+
+write.csv(
+  flow_counts,
+  "exports/flowchart_counts.csv",
+  row.names = FALSE
+)
