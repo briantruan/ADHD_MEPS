@@ -1,11 +1,7 @@
 # 08_flowchart.R
-# Goal: Create an inclusion/exclusion flow chart directly from fyc_clean
-install.packages("DiagrammeR")
-install.packages("DiagrammeRsvg")
-install.packages("rsvg")
-
-# 08_flowchart.R
 # Person-level inclusion/exclusion flowchart
+# Main analytic cohort ends at persistent ADHD diagnosis cohort (N=195)
+# Side note indicates linked medication fill subgroup (N=102)
 
 library(dplyr)
 library(stringr)
@@ -17,10 +13,9 @@ library(rsvg)
 if (!dir.exists("exports")) dir.create("exports", recursive = TRUE)
 
 # ---------------------------
-# GET STARTING COHORT COUNTS
+# LOAD SOURCE DATA IF NEEDED
 # ---------------------------
 
-# If fyc_2019/fyc_2021 are not currently loaded, reload them from saved RDS
 if (!exists("fyc_2019") | !exists("fyc_2021")) {
   all_data_flow <- readRDS("data/meps_all_years.rds")
   fyc_2019_flow <- all_data_flow$fyc_2019
@@ -30,6 +25,10 @@ if (!exists("fyc_2019") | !exists("fyc_2021")) {
   fyc_2019_flow <- fyc_2019
   fyc_2021_flow <- fyc_2021
 }
+
+# ---------------------------
+# INITIAL COHORT COUNTS
+# ---------------------------
 
 ids_2019 <- unique(fyc_2019_flow$DUPERSID)
 ids_2021 <- unique(fyc_2021_flow$DUPERSID)
@@ -42,26 +41,31 @@ n_not_both <- length(setdiff(ids_either, ids_both))
 n_both     <- length(ids_both)
 
 # ---------------------------
-# PERSON-LEVEL FLAGS FROM FYC_CLEAN
+# PERSON-LEVEL FLAGS
 # ---------------------------
 
 flow_person <- fyc_clean %>%
   filter(DUPERSID %in% ids_both) %>%
   group_by(DUPERSID) %>%
   summarize(
+    
+    # eligible in both years
     age_eligible = all(AGE53X <= 65, na.rm = TRUE),
     
+    # exclude Medicare
     medicare_any = any(
       medicare == "Medicare, any" |
         str_detect(as.character(insurance), "Medicare"),
       na.rm = TRUE
     ),
     
+    # ADHD diagnosis in BOTH years
     adhd_dx_2019 = any(year == 2019 & flag_adhd_dx == 1, na.rm = TRUE),
     adhd_dx_2021 = any(year == 2021 & flag_adhd_dx == 1, na.rm = TRUE),
     adhd_dx_both_years = adhd_dx_2019 & adhd_dx_2021,
     
-    linked_adhd_med_fill_either_year = any(
+    # linked med fills in EITHER year
+    linked_fill_either = any(
       adhd_pmed_flag == 1,
       na.rm = TRUE
     ),
@@ -102,26 +106,17 @@ flow_counts <- tibble(
     filter(age_eligible, !medicare_any, adhd_dx_both_years) %>%
     nrow(),
   
-  no_linked_fill = flow_person %>%
+  linked_fill_subgroup = flow_person %>%
     filter(
       age_eligible,
       !medicare_any,
       adhd_dx_both_years,
-      !linked_adhd_med_fill_either_year
-    ) %>%
-    nrow(),
-  
-  adhd_dx_both_with_fill = flow_person %>%
-    filter(
-      age_eligible,
-      !medicare_any,
-      adhd_dx_both_years,
-      linked_adhd_med_fill_either_year
+      linked_fill_either
     ) %>%
     nrow()
 )
 
-fc <- flow_counts[1, ]
+fc <- flow_counts[1,]
 
 # ---------------------------
 # FLOWCHART
@@ -130,18 +125,28 @@ fc <- flow_counts[1, ]
 flowchart <- grViz(glue("
 digraph flowchart {{
 
-graph [layout=dot, rankdir=TB]
+graph [
+  layout=dot,
+  rankdir=TB,
+  nodesep=0.55,
+  ranksep=0.65
+]
 
 node [
- shape=box
- style=rounded
- fontname=Helvetica
- fontsize=12
- width=5.0
+  shape=box,
+  style=rounded,
+  fontname=Helvetica,
+  fontsize=12,
+  width=5.2
+]
+
+edge [
+  fontname=Helvetica,
+  fontsize=11
 ]
 
 A [
-label='Combined 2019 and 2021 MEPS cohort\\nN = {fc$combined}'
+label='Combined 2019 and 2021 MEPS respondents\\nN = {fc$combined}'
 ]
 
 B [
@@ -157,52 +162,56 @@ label='Non-Medicare age-eligible cohort\\nN = {fc$non_medicare_age_eligible}'
 ]
 
 E [
-label='Respondents with ADHD diagnosis\\nin both 2019 and 2021 (ICD-10 F90)\\nN = {fc$adhd_dx_both}'
+label='Included analytic ADHD cohort\\nRespondents with ADHD diagnosis\\nin both 2019 and 2021 (ICD-10 F90)\\nN = {fc$adhd_dx_both}'
 ]
 
 F [
-label='Respondents with ADHD diagnosis in both years\\nand linked ADHD medication fills in either year\\nN = {fc$adhd_dx_both_with_fill}'
+label='Among included ADHD cohort:\\n{fc$linked_fill_subgroup} had linked ADHD medication fills',
+shape=note
 ]
 
 X1 [
-label='Excluded: not present in both years\\nN = {fc$not_both}'
-style='rounded,dashed'
+label='Excluded: not present in both years\\nN = {fc$not_both}',
+style='rounded,dashed',
+width=4.3
 ]
 
 X2 [
-label='Excluded: age >65 in either study year\\nN = {fc$age_gt65}'
-style='rounded,dashed'
+label='Excluded: age >65 in either study year\\nN = {fc$age_gt65}',
+style='rounded,dashed',
+width=4.3
 ]
 
 X3 [
-label='Excluded: Medicare beneficiary in either study year\\nN = {fc$medicare_excluded}'
-style='rounded,dashed'
+label='Excluded: Medicare beneficiary\\nin either study year\\nN = {fc$medicare_excluded}',
+style='rounded,dashed',
+width=4.3
 ]
 
 X4 [
-label='Excluded: ADHD diagnosis not present in both years\\nN = {fc$no_adhd_dx_both}'
-style='rounded,dashed'
+label='Excluded: ADHD diagnosis absent\\nin one or both study years\\nN = {fc$no_adhd_dx_both}',
+style='rounded,dashed',
+width=4.3
 ]
 
-X5 [
-label='Excluded: no linked ADHD medication fill\\nN = {fc$no_linked_fill}'
-style='rounded,dashed'
-]
-
+# Main vertical path
 A -> B
-A -> X1
-
 B -> C
-B -> X2
-
 C -> D
-C -> X3
-
 D -> E
-D -> X4
+E -> F [style=dotted]
 
-E -> F
-E -> X5
+# Side exclusion boxes
+B -> X1 [constraint=false]
+C -> X2 [constraint=false]
+D -> X3 [constraint=false]
+E -> X4 [constraint=false]
+
+# Force exclusion boxes to sit beside corresponding main boxes
+{{ rank=same; B; X1 }}
+{{ rank=same; C; X2 }}
+{{ rank=same; D; X3 }}
+{{ rank=same; E; X4 }}
 
 }}
 "))
@@ -219,4 +228,8 @@ writeLines(svg, "exports/flowchart.svg")
 rsvg_png(charToRaw(svg), "exports/flowchart.png")
 rsvg_pdf(charToRaw(svg), "exports/flowchart.pdf")
 
-write.csv(flow_counts, "exports/flowchart_counts.csv", row.names = FALSE)
+write.csv(
+  flow_counts,
+  "exports/flowchart_counts.csv",
+  row.names = FALSE
+)
