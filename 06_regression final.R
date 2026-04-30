@@ -65,7 +65,7 @@ summary(model6)
 
 #Model 7 - Adding Insurance
 model7 <- svyglm(
-  adhd_fills ~ year + AGE53X + sex + race + education + insurance_table1,
+  adhd_fills ~ year + AGE53X + sex + race + education + has_insurance,
   design = meps_design_subset_adhd,
   family = quasipoisson()
 )
@@ -74,20 +74,30 @@ summary(model7)
 
 #Model 8 - Adding Income (Final)
 model8 <- svyglm(
-  adhd_fills ~ year + AGE53X + sex + year:race + education + insurance_table1 + adult_income_2021,
+  adhd_fills ~ year + AGE53X + sex + race + education + has_insurance + POVCAT,
   design = meps_design_subset_adhd,
   family = quasipoisson()
-  )
+)
 
 summary(model8)
 
+
+model9_simple <- svyglm(
+  adhd_fills ~ year + AGE53X + sex + race,
+  design = meps_design_subset_adhdfills,
+  family = quasipoisson()
+)
+summary(model9)
+exp(coef(model9))
+confint.default(model9)
+ci <- exp(confint.default(model9))
 
 #Converting to IRRS
 exp(coef(model8))
 # ADHD prescription fills in 2021 were about 2.5% higher than in 2019. For each additional year of age, ADHD fills increase by about 1.2%. 
 # Males had about 3% higher ADHD fill rates than females. Black participants had about 58% lower ADHD fill rates than White participants.
-# Other race groups had about 64% lower fill rates than White participants. People with high school education or less had about 43% lower 
-# ADHD fill rates compared with college-educated individuals. 21% higher fill rates than Medicaid-only. "Other public" 71% lower fill 
+# Other race groups had about 64% lower fills than White participants. People with high school education or less had about 43% lower 
+# ADHD fill compared with college-educated individuals. 21% higher fill rates than Medicaid-only. "Other public" 71% lower fill 
 # compared to Medicaid-only. "Private- only" had 45% lower fill rates than Medicaid-only. "Uninsured" had 31% lower fill rates than 
 # Medicaid-only. Income has almost no effect per $1 increase.
 
@@ -114,7 +124,6 @@ results <- data.frame(
 
 results
 
-#Year: IRR = 1.02, p = 0.78 ;ADHD fills were about 2% higher in 2021 vs 2019, but this is not significant.
 # Age: IRR = 1.01, p = 0.13 ; not significant.
 # Male sex: IRR = 1.03, p = 0.89; not significant.
 # Black race: IRR = 0.42, p = 0.002; significantly lower ADHD fill rate compared with White participants.
