@@ -81,17 +81,6 @@ model8 <- svyglm(
 
 summary(model8)
 
-
-model9_simple <- svyglm(
-  adhd_fills ~ year + AGE53X + sex + race,
-  design = meps_design_subset_adhdfills,
-  family = quasipoisson()
-)
-summary(model9)
-exp(coef(model9))
-confint.default(model9)
-ci <- exp(confint.default(model9))
-
 #Converting to IRRS
 exp(coef(model8))
 # ADHD prescription fills in 2021 were about 2.5% higher than in 2019. For each additional year of age, ADHD fills increase by about 1.2%. 
@@ -104,7 +93,7 @@ exp(coef(model8))
 #Confidence Intervals
 confint.default(model8)
 ci <- exp(confint.default(model8))
-
+summary (ci1)
 
 #Results Table
 
@@ -124,6 +113,33 @@ results <- data.frame(
 
 results
 
+
+model9<- svyglm(
+  adhd_fills ~ year + AGE53X + sex + race,
+  design = meps_design_subset_adhdfills,
+  family = quasipoisson()
+)
+summary(model9)
+exp(coef(model9))
+confint.default(model9)
+ci2 <- exp(confint.default(model9))
+summary (ci2)
+
+coef_table2 <- coef(summary(model9))
+
+results2 <- data.frame(
+  term = rownames(coef_table2),
+  IRR = exp(coef(model9)),
+  CI_low = ci2[, 1],
+  CI_high = ci2[, 2],
+  p_value = 2 * pt(
+    abs(coef_table2[, "t value"]),
+    df = degf(meps_design_subset_adhdfills),
+    lower.tail = FALSE
+  )
+)
+
+results2
 # Age: IRR = 1.01, p = 0.13 ; not significant.
 # Male sex: IRR = 1.03, p = 0.89; not significant.
 # Black race: IRR = 0.42, p = 0.002; significantly lower ADHD fill rate compared with White participants.
