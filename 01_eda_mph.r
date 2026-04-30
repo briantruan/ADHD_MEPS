@@ -138,7 +138,23 @@ recode_fyc <- function(df) {
         INSCOV == "UNINSURED" ~ "No insurance",
         INSCOV %in% c("ANY PRIVATE", "PUBLIC ONLY") ~ "Has insurance",
         TRUE ~ NA_character_
-      )
+      },
+      POVCAT = case_when(
+        POVCAT %in% c("POOR/NEGATIVE", "NEAR POOR") ~ "Very low income",
+        POVCAT == "LOW INCOME" ~ "Low income",
+        POVCAT == "MIDDLE INCOME" ~ "Middle income",
+        POVCAT == "HIGH INCOME" ~ "High income",
+        TRUE ~ NA_character_
+      ),
+      
+      POVCAT = factor(
+        POVCAT,
+        levels = c(
+          "Very low income",
+          "Low income",
+          "Middle income",
+          "High income"
+        )
     )
 }
 
