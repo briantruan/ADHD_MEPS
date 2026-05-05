@@ -10,6 +10,9 @@
 # isntall.packages("gt")
 # install.packages("stringr")
 # install.packages("survey")
+# install.packages("DiagrammeR")
+# install.packages("DiagrammeRsvg")
+# install.packages("rsvg")
 
 # # Run these every time you restart R:
 library(foreign)
@@ -23,6 +26,10 @@ library(gtsummary)
 library(gt)
 library(stringr)
 library(survey)
+library(glue)
+library(DiagrammeR)
+library(DiagrammeRsvg)
+library(rsvg)
 
 # only run once if needed
 # install_github("sshrestha274/meps_r_pkg/MEPS")
