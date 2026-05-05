@@ -67,7 +67,7 @@ summary(model7)
 #Model 8 - Adding Income (Final)
 model8 <- svyglm(
   adhd_fills ~ year + age_group + sex + race + education + has_insurance 
-                    + POVCAT + year:has_insurance,
+                    + povcat + year:has_insurance,
   design = design_step4,
   family = quasipoisson()
 )
@@ -116,7 +116,7 @@ results
 
 model9 <- svyglm(
   adhd_fills ~ year + age_group + sex + race + education + has_insurance 
-                    + POVCAT + year:has_insurance,
+                    + povcat + year:has_insurance,
   design = design_step5,
   family = quasipoisson()
 )
@@ -141,3 +141,50 @@ results2 <- data.frame(
 )
 
 results2
+
+# ---- FOREST PLOTS OF IRRS ----
+
+term_labels <- c(
+  "year2021:has_insuranceNo insurance" = "2021 x No insurance",
+  "year2021" = "Year (ref: 2019)",
+  "sexMale" = "Sex (ref: Female)",
+  "raceOther" = "Race: Other (ref: White)",
+  "raceBlack" = "Race: Black (ref: White)",
+  "povcatLow income" = "Low income (ref: Very low income)",
+  "povcatMiddle income" = "Middle income (ref: Very low income)",
+  "povcatHigh income" = "High income (ref: Very low income)",
+  "has_insuranceNo insurance" = "No insurance (ref: Has insurance)",
+  "educationHigh school graduation or less" = "High school or less (ref: College or more)",
+  "age_groupAdult (18+ years)" = "Age group (ref: Child <18 years)",
+  "(Intercept)" = "Intercept"
+)
+
+forest1 <- ggplot(results, aes(x = fct_reorder(factor(term, 
+                               levels = names(term_labels), 
+                               labels = term_labels), IRR), 
+                               y = IRR, 
+                               ymin = CI_low, 
+                               ymax = CI_high)) +
+  geom_pointrange() +
+  geom_hline(yintercept = 1, linetype = "dashed") +
+  coord_flip() +
+  theme_minimal() +
+  labs(title = "Incidence rate ratios (IRRs) of ADHD fills, full cohort", 
+       x = "Term", y = "IRR (95% CI)")
+
+forest2 <- ggplot(results2, aes(x = fct_reorder(factor(term, 
+                                levels = names(term_labels), 
+                                labels = term_labels), IRR), 
+                                y = IRR, 
+                                ymin = CI_low, 
+                                ymax = CI_high)) +
+  geom_pointrange() +
+  geom_hline(yintercept = 1, linetype = "dashed") +
+  coord_flip() +
+  theme_minimal() +
+  labs(title = "Incidence rate ratios (IRRs) of ADHD fills among those with fills", 
+       x = "Term", y = "IRR (95% CI)")
+
+# Save forest plots
+ggsave("exports/forest_plot_full_cohort.png", forest1, width = 8, height = 6)
+ggsave("exports/forest_plot_fills_only.png", forest2, width = 8, height = 6)
