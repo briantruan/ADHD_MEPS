@@ -9,7 +9,7 @@ summary(model1)
 
 #Model 2 - Adding Age
 model2 <- svyglm(
-  adhd_fills ~ year + AGE53X,
+  adhd_fills ~ year + age_group,
   design = design_step4,
   family = quasipoisson()
 )
@@ -19,7 +19,7 @@ summary(model2)
 
 #Model 3 - Adding Sex
 model3 <- svyglm(
-  adhd_fills ~ year + AGE53X + sex,
+  adhd_fills ~ year + age_group + sex,
   design = design_step4,
   family = quasipoisson()
 )
@@ -28,7 +28,7 @@ summary(model3)
 
 #Model 4 - Adding Race
 model4 <- svyglm(
-  adhd_fills ~ year + AGE53X + sex + race,
+  adhd_fills ~ year + age_group + sex + race,
   design = design_step4,
   family = quasipoisson()
 )
@@ -37,7 +37,7 @@ summary(model4)
 
 #Model 5 - Adding Ethnicity
 model5 <- svyglm(
-  adhd_fills ~ year + AGE53X + sex + ethnicity,
+  adhd_fills ~ year + age_group + sex + ethnicity,
   design = design_step4,
   family = quasipoisson()
 )
@@ -48,7 +48,7 @@ summary(model5)
 
 #Model 6 - Adding Education
 model6 <- svyglm(
-  adhd_fills ~ year + AGE53X + sex + race + education,
+  adhd_fills ~ year + age_group + sex + race + education,
   design = design_step4,
   family = quasipoisson()
 )
@@ -57,7 +57,7 @@ summary(model6)
 
 #Model 7 - Adding Insurance
 model7 <- svyglm(
-  adhd_fills ~ year + AGE53X + sex + race + education + has_insurance,
+  adhd_fills ~ year + age_group + sex + race + education + has_insurance,
   design = design_step4,
   family = quasipoisson()
 )
@@ -66,7 +66,8 @@ summary(model7)
 
 #Model 8 - Adding Income (Final)
 model8 <- svyglm(
-  adhd_fills ~ year + AGE53X + sex + race + education + has_insurance + POVCAT,
+  adhd_fills ~ year + age_group + sex + race + education + has_insurance 
+                    + POVCAT + year:has_insurance,
   design = design_step4,
   family = quasipoisson()
 )
@@ -78,11 +79,16 @@ exp(coef(model8))
 
 # these are probably not accurate:
 
-# ADHD prescription fills in 2021 were about 2.5% higher than in 2019. For each additional year of age, ADHD fills increase by about 1.2%. 
-# Males had about 3% higher ADHD fill rates than females. Black participants had about 58% lower ADHD fill rates than White participants.
-# Other race groups had about 64% lower fills than White participants. People with high school education or less had about 43% lower 
-# ADHD fill compared with college-educated individuals. 21% higher fill rates than Medicaid-only. "Other public" 71% lower fill 
-# compared to Medicaid-only. "Private- only" had 45% lower fill rates than Medicaid-only. "Uninsured" had 31% lower fill rates than 
+# ADHD prescription fills in 2021 were about 2.5% higher than in 2019. 
+# For each additional year of age, ADHD fills increase by about 1.2%. 
+# Males had about 3% higher ADHD fill rates than females. 
+# Black participants had about 58% lower ADHD fill rates than White.
+# Other race groups had about 64% lower fills than White participants. 
+# People with high school education or less had about 43% lower 
+# ADHD fill compared with college-educated individuals. 21% higher 
+# fill rates than Medicaid-only. "Other public" 71% lower fill 
+# compared to Medicaid-only. "Private- only" had 45% lower fill rates than
+#  Medicaid-only. "Uninsured" had 31% lower fill rates than 
 # Medicaid-only. Income has almost no effect per $1 increase.
 
 #Confidence Intervals
@@ -108,9 +114,9 @@ results <- data.frame(
 
 results
 
-
-model9<- svyglm(
-  adhd_fills ~ year + AGE53X + sex + race,
+model9 <- svyglm(
+  adhd_fills ~ year + age_group + sex + race + education + has_insurance 
+                    + POVCAT + year:has_insurance,
   design = design_step5,
   family = quasipoisson()
 )
