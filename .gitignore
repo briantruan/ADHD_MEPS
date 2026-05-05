@@ -13,7 +13,9 @@
 /instructions_files/
 /shrestha/
 /IRB_DOC/
-/old_code/
+
+# in case anyone wants to update it
+# /old_code/
 
 # Example code in package build process
 *-Ex.R
