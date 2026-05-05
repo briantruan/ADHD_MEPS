@@ -16,7 +16,6 @@ model2 <- svyglm(
 
 summary(model2)
 
-
 #Model 3 - Adding Sex
 model3 <- svyglm(
   adhd_fills ~ year + age_group + sex,
@@ -188,3 +187,8 @@ forest2 <- ggplot(results2, aes(x = fct_reorder(factor(term,
 # Save forest plots
 ggsave("exports/forest_plot_full_cohort.png", forest1, width = 8, height = 6)
 ggsave("exports/forest_plot_fills_only.png", forest2, width = 8, height = 6)
+
+# using gt tables, include each result from models 1 through 8
+# in a table format, showing sequential addition of covariates 
+# and how IRR (+ 95 CI, p-val) changes for every term.
+
