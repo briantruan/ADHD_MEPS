@@ -189,38 +189,64 @@ ggsave("exports/forest_plot_full_cohort.png", forest1, width = 8, height = 6)
 ggsave("exports/forest_plot_fills_only.png", forest2, width = 8, height = 6)
 
 # ---- TABLES OF REGRESSION RESULTS ----
-tbl1 <- tbl_regression(model1, exponentiate = TRUE)
-tbl2 <- tbl_regression(model2, exponentiate = TRUE)
-tbl3 <- tbl_regression(model3, exponentiate = TRUE)
-tbl4 <- tbl_regression(model4, exponentiate = TRUE)
-tbl5 <- tbl_regression(model5, exponentiate = TRUE)
-tbl6 <- tbl_regression(model6, exponentiate = TRUE)
-tbl7 <- tbl_regression(model7, exponentiate = TRUE)
-tbl8 <- tbl_regression(model8, exponentiate = TRUE)
+mk_tbl_combined <- function(model, digits = 2) {
+  tbl_regression(model, exponentiate = TRUE) %>%
+    modify_table_body(
+      ~ .x %>%
+        mutate(
+          irr_ci = sprintf(
+            paste0("%.", digits, "f (%.", digits, "f, %.", digits, "f)"),
+            estimate, conf.low, conf.high
+          ),
+          p_value = case_when(
+            is.na(p.value) ~ NA_character_,
+            p.value < 0.001 ~ "<0.001",
+            TRUE ~ sprintf("%.3f", p.value)
+          )
+        ) %>%
+        select(
+          any_of(c("row_type", "var_type", "label")),
+          irr_ci,
+          p_value,
+          everything()
+        )
+    ) %>%
+    modify_column_hide(c(estimate, conf.low, conf.high, p.value)) %>%
+    modify_column_unhide(c("irr_ci", "p_value")) %>%
+    modify_header(
+      irr_ci = "IRR (95% CI)",
+      p_value = "p-value"
+    ) %>%
+    modify_footnote(
+      irr_ci ~ "Incidence rate ratio (IRR) with 95% confidence interval (CI)."
+    ) %>%
+    modify_table_body(~ .x %>% filter(!is.na(estimate))) %>% 
+    bold_labels()
+}
+
+tbl1 <- mk_tbl_combined(model1)
+tbl2 <- mk_tbl_combined(model2)
+tbl3 <- mk_tbl_combined(model3)
+tbl4 <- mk_tbl_combined(model4)
+tbl5 <- mk_tbl_combined(model5)
+tbl6 <- mk_tbl_combined(model6)
+tbl7 <- mk_tbl_combined(model7)
+tbl8 <- mk_tbl_combined(model8)
 
 combined_table <- tbl_merge(
   tbls = list(tbl1, tbl2, tbl3, tbl4, tbl5, tbl6, tbl7, tbl8),
-  tab_spanner = c(
-    "(1)",
-    "(2)",
-    "(3)",
-    "(4)",
-    "(5)",
-    "(6)",
-    "(7)",
-    "(8)"
-  )
-) %>%
+  tab_spanner = c("(1)", "(2)", "(3)", "(4)", "(5)", "(6)", "(7)", "(8)"),
+  quiet = TRUE
+) |>
   bold_labels()
 
 combined_table_gt <- as_gt(combined_table)
 
-# export
-gtsave(combined_table_gt, "exports/regression_results_table.docx")
-gtsave(combined_table_gt, "exports/regression_results_table.html")
+combined_table_gt
 
-library(dplyr)
-library(gt)
+# export
+gtsave(combined_table_gt, "exports/table4.docx")
+gtsave(combined_table_gt, "exports/table4.html")
 
 results_clean <- results %>%
   mutate(
@@ -232,9 +258,6 @@ results_clean <- results %>%
 
 results_gt <- results_clean %>%
   gt() %>%
-  tab_header(
-    title = md("**Table 4. Survey-weighted quasipoisson regression of ADHD medication fills**")
-  ) %>%
   cols_label(
     term = md("**Characteristic**"),
     IRR = md("**IRR**"),
@@ -259,65 +282,3 @@ results_gt <- results_clean %>%
 
 results_gt
 
-
-models <- list(model1, model2, model3, model4, model5, model6, model7, model8)
-model_names <- paste0("(", seq_along(models), ")")
-
-# build formatted cells per model (IRR and CI only, without p-values)
-formatted_list <- imap(models, ~{
-  mod <- .x
-  coefs <- coef(summary(mod))
-  terms <- rownames(coefs)
-  irr <- exp(coef(mod))
-  ci <- exp(confint.default(mod))
-  formatted <- sprintf("%.2f (%.2f, %.2f)",
-                       irr[terms],
-                       ci[terms, 1],
-                       ci[terms, 2])
-  tibble(term = terms, formatted = formatted)
-})
-
-names(formatted_list) <- model_names
-
-# build p-value list per model
-pval_list <- imap(models, ~{
-  mod <- .x
-  coefs <- coef(summary(mod))
-  terms <- rownames(coefs)
-  pvals <- 2 * pt(abs(coefs[, "t value"]), df = degf(design_step4), lower.tail = FALSE)
-  tibble(term = terms, pval = sprintf("%.3f", pvals[terms]))
-})
-
-names(pval_list) <- paste0("p_", model_names)
-
-# rename formatted columns to model headers
-renamed_list <- imap(formatted_list, ~ rename(.x, !!.y := formatted))
-renamed_pval_list <- imap(pval_list, ~ rename(.x, !!.y := pval))
-
-# join all tables by term first
-results_wide <- reduce(renamed_list, full_join, by = "term")
-results_wide <- reduce(renamed_pval_list, full_join, by = "term", .init = results_wide)
-
-# reorder columns to interleave IRR/CI and p-values: (1), p_(1), (2), p_(2), etc.
-col_order <- c("term")
-for (i in seq_along(model_names)) {
-  col_order <- c(col_order, model_names[i], paste0("p_", model_names[i]))
-}
-
-results_wide <- results_wide |>
-  select(all_of(col_order))
-
-# map term names to human labels if available
-results_wide <- results_wide %>% 
-  mutate(label = ifelse(term %in% names(term_labels),
-                        as.character(term_labels[term]),
-                        term), 
-         .before = 1) %>%
-  select(-term)
-
-# render gt table
-results_table <- results_wide %>% gt()
-results_table
-
-gtsave(results_table, "exports/regression_results_table.html")
-gtsave(results_table, "exports/regression_results_table.docx")
