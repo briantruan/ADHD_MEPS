@@ -160,14 +160,14 @@ term_labels <- c(
 )
 
 forest1 <- ggplot(results, aes(x = fct_reorder(factor(term, 
-                               levels = names(term_labels), 
-                               labels = term_labels), IRR), 
-                               y = IRR, 
-                               ymin = CI_low, 
-                               ymax = CI_high)) +
+                 levels = names(term_labels), 
+                 labels = term_labels), IRR), 
+                 y = IRR, 
+                 ymin = CI_low, 
+                 ymax = CI_high)) +
   geom_pointrange() +
   geom_hline(yintercept = 1, linetype = "dashed") +
-  coord_flip() +
+  coord_flip(ylim = c(0, 8)) +
   theme_minimal() +
   labs(title = "Incidence rate ratios (IRRs) of ADHD fills, full cohort", 
        x = "Term", y = "IRR (95% CI)")
