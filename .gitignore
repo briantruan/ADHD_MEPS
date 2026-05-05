@@ -8,11 +8,12 @@
 
 # User-specific files
 .Ruserdata
-/analysis template
-/archive
-/instructions_files
-/shrestha
-/IRB_DOC
+/analysis template/
+/archive/
+/instructions_files/
+/shrestha/
+/IRB_DOC/
+/old_code/
 
 # Example code in package build process
 *-Ex.R
