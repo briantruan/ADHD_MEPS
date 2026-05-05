@@ -192,6 +192,146 @@ ggsave("exports/forest_plot_fills_only.png", forest2, width = 8, height = 6)
 # in a table format, showing sequential addition of covariates 
 # and how IRR (+ 95 CI, p-val) changes for every term.
 
+library(gtsummary)
+
+tbl1 <- tbl_regression(model1, exponentiate = TRUE)
+tbl2 <- tbl_regression(model2, exponentiate = TRUE)
+tbl3 <- tbl_regression(model3, exponentiate = TRUE)
+tbl4 <- tbl_regression(model4, exponentiate = TRUE)
+tbl5 <- tbl_regression(model5, exponentiate = TRUE)
+tbl6 <- tbl_regression(model6, exponentiate = TRUE)
+tbl7 <- tbl_regression(model7, exponentiate = TRUE)
+tbl8 <- tbl_regression(model8, exponentiate = TRUE)
+
+combined_table <- tbl_merge(
+  tbls = list(tbl1, tbl2, tbl3, tbl4, tbl5, tbl6, tbl7, tbl8),
+  tab_spanner = c(
+    "Model 1",
+    "Model 2",
+    "Model 3",
+    "Model 4",
+    "Model 5",
+    "Model 6",
+    "Model 7",
+    "Model 8"
+  )
+)
+
+combined_table
+combined_table %>%
+  bold_labels()
+
+library(dplyr)
+library(gt)
+
+results_clean <- results %>%
+  mutate(
+    IRR = round(IRR, 2),
+    CI = paste0(round(CI_low, 2), "–", round(CI_high, 2)),
+    p_value = ifelse(p_value < 0.001, "<0.001", round(p_value, 3))
+  ) %>%
+  select(term, IRR, CI, p_value)
+
+results_gt <- results_clean %>%
+  gt() %>%
+  tab_header(
+    title = md("**Table 4. Survey-weighted quasipoisson regression of ADHD medication fills**")
+  ) %>%
+  cols_label(
+    term = md("**Characteristic**"),
+    IRR = md("**IRR**"),
+    CI = md("**95% CI**"),
+    p_value = md("**p-value**")
+  ) %>%
+  tab_options(
+    table.font.names = "Arial",
+    table.font.size = 12,
+    heading.title.font.size = 13,
+    column_labels.font.weight = "bold",
+    row_group.font.weight = "bold",
+    table.border.top.width = px(2),
+    table.border.bottom.width = px(2),
+    column_labels.border.top.width = px(2),
+    column_labels.border.bottom.width = px(2),
+    row.striping.include_table_body = FALSE
+  ) %>%
+  tab_source_note(
+    source_note = md("IRR = incidence rate ratio; CI = confidence interval. Model adjusted for year, age, sex, race, education, insurance status, and poverty category.")
+  )
+
+results_gt
+
+
+library(gtsummary)
+
+tbl1 <- tbl_regression(model1, exponentiate = TRUE)
+tbl2 <- tbl_regression(model2, exponentiate = TRUE)
+tbl3 <- tbl_regression(model3, exponentiate = TRUE)
+tbl4 <- tbl_regression(model4, exponentiate = TRUE)
+tbl5 <- tbl_regression(model5, exponentiate = TRUE)
+tbl6 <- tbl_regression(model6, exponentiate = TRUE)
+tbl7 <- tbl_regression(model7, exponentiate = TRUE)
+tbl8 <- tbl_regression(model8, exponentiate = TRUE)
+
+combined_table <- tbl_merge(
+  tbls = list(tbl1, tbl2, tbl3, tbl4, tbl5, tbl6, tbl7, tbl8),
+  tab_spanner = c(
+    "Model 1",
+    "Model 2",
+    "Model 3",
+    "Model 4",
+    "Model 5",
+    "Model 6",
+    "Model 7",
+    "Model 8"
+  )
+)
+
+combined_table
+combined_table %>%
+  bold_labels()
+
+library(dplyr)
+library(gt)
+
+results_clean <- results %>%
+  mutate(
+    IRR = round(IRR, 2),
+    CI = paste0(round(CI_low, 2), "–", round(CI_high, 2)),
+    p_value = ifelse(p_value < 0.001, "<0.001", round(p_value, 3))
+  ) %>%
+  select(term, IRR, CI, p_value)
+
+results_gt <- results_clean %>%
+  gt() %>%
+  tab_header(
+    title = md("**Table 4. Survey-weighted quasipoisson regression of ADHD medication fills**")
+  ) %>%
+  cols_label(
+    term = md("**Characteristic**"),
+    IRR = md("**IRR**"),
+    CI = md("**95% CI**"),
+    p_value = md("**p-value**")
+  ) %>%
+  tab_options(
+    table.font.names = "Arial",
+    table.font.size = 12,
+    heading.title.font.size = 13,
+    column_labels.font.weight = "bold",
+    row_group.font.weight = "bold",
+    table.border.top.width = px(2),
+    table.border.bottom.width = px(2),
+    column_labels.border.top.width = px(2),
+    column_labels.border.bottom.width = px(2),
+    row.striping.include_table_body = FALSE
+  ) %>%
+  tab_source_note(
+    source_note = md("IRR = incidence rate ratio; CI = confidence interval. Model adjusted for year, age, sex, race, education, insurance status, and poverty category.")
+  )
+
+results_gt
+
+
 models <- list(model1, model2, model3, model4, model5, model6, model7, model8)
 model_names <- paste0("(", seq_along(models), ")")
 
